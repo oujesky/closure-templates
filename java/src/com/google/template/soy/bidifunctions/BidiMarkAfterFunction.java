@@ -26,6 +26,8 @@ import com.google.template.soy.internal.i18n.BidiGlobalDir;
 import com.google.template.soy.internal.i18n.SoyBidiUtils;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
 import com.google.template.soy.shared.restricted.SoyJavaFunction;
@@ -46,7 +48,7 @@ import javax.inject.Singleton;
  *
  */
 @Singleton
-class BidiMarkAfterFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class BidiMarkAfterFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   /** Provider for the current bidi global directionality. */
@@ -104,5 +106,15 @@ class BidiMarkAfterFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPyS
         value.getText() + (isHtml != null ? ", " + isHtml.getText() : "") + ")";
 
     return new PyExpr(callText, Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    PhpExpr value = args.get(0);
+    PhpExpr isHtml = (args.size() == 2) ? args.get(1) : null;
+
+    String callText = "Bidi::markAfter(" + bidiGlobalDirProvider.get().getCodeSnippet() + ", " +
+            value.getText() + (isHtml != null ? ", " + isHtml.getText() : "") + ")";
+
+    return new PhpExpr(callText, Integer.MAX_VALUE);
   }
 }

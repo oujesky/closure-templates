@@ -110,6 +110,25 @@ public class SoyBidiUtils {
   }
 
   /**
+   * Decodes bidi global directionality from the PHP bidiIsRtlFn command line option.
+   * @param bidiIsRtlFn The string containing the full module path and function name.
+   * @return BidiGlobalDir object - or null if the option was not specified.
+   */
+  public static BidiGlobalDir decodeBidiGlobalDirFromPhpOptions(String bidiIsRtlFn) {
+      if (bidiIsRtlFn == null || bidiIsRtlFn.isEmpty()) {
+          return null;
+      }
+      int dotIndex = bidiIsRtlFn.lastIndexOf('.');
+      Preconditions.checkArgument(
+              dotIndex > 0 && dotIndex < bidiIsRtlFn.length() - 1,
+              "If specified a bidiIsRtlFn must include the module path to allow for proper importing.");
+      // When importing the module, we'll using the constant name to avoid potential conflicts.
+      String fnName = bidiIsRtlFn.substring(dotIndex + 1) + "()";
+      return BidiGlobalDir.forIsRtlCodeSnippet(
+              IS_RTL_MODULE_ALIAS + '.' + fnName, SoyBackendKind.PHP_SRC);
+  }
+
+  /**
    * A regular expression for matching language codes indicating the FakeBidi pseudo-locale.
    * The FakeBiDi pseudo-locale unfortunately currently does not have an accepted language code.
    * Some products use 'qbi' ('qXX' is a standard way of indicating a private-use language code,

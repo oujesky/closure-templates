@@ -26,6 +26,10 @@ import com.google.template.soy.data.restricted.StringData;
 import com.google.template.soy.internal.targetexpr.TargetExpr;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyLibraryAssistedJsSrcPrintDirective;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.PhpExprUtils;
+import com.google.template.soy.phpsrc.restricted.PhpFunctionExprBuilder;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.PyExprUtils;
 import com.google.template.soy.pysrc.restricted.PyFunctionExprBuilder;
@@ -62,7 +66,7 @@ import javax.inject.Provider;
  *
  */
 class FormatNumDirective implements SoyJavaPrintDirective, SoyLibraryAssistedJsSrcPrintDirective,
-      SoyPySrcPrintDirective {
+      SoyPySrcPrintDirective, SoyPhpSrcPrintDirective {
 
 
   // Map of format arguments to the Closure Format enum.
@@ -177,6 +181,16 @@ class FormatNumDirective implements SoyJavaPrintDirective, SoyLibraryAssistedJsS
 
     return builder.asPyStringExpr();
   }
+
+  @Override public PhpExpr applyForPhpSrc(PhpExpr value, List<PhpExpr> args) {
+      String numberFormatType = parseFormat(args);
+      PhpFunctionExprBuilder builder =
+              new PhpFunctionExprBuilder(PhpExprUtils.TRANSLATOR_NAME + "::formatNum")
+                      .addArg(value)
+                      .addArg(new PhpExpr(numberFormatType, Integer.MAX_VALUE));
+
+      return builder.asPhpStringExpr();
+    }
 
   @Override public ImmutableSet<String> getRequiredJsLibNames() {
     return REQUIRED_JS_LIBS;

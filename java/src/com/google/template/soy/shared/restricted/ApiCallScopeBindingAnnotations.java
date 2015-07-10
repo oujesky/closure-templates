@@ -88,4 +88,20 @@ public class ApiCallScopeBindingAnnotations {
   @Target({FIELD, PARAMETER, METHOD})
   @Retention(RUNTIME)
   public @interface PyTranslationClass {}
+
+  /**
+   * Annotation for the bidiIsRtlFn parameter in the ApiCallScope.
+   */
+  @BindingAnnotation
+  @Target({FIELD, PARAMETER, METHOD})
+  @Retention(RUNTIME)
+  public @interface PhpBidiIsRtlFn {}
+
+  /**
+   * Annotation for the translationClass parameter in the ApiCallScope.
+   */
+  @BindingAnnotation
+  @Target({FIELD, PARAMETER, METHOD})
+  @Retention(RUNTIME)
+  public @interface PhpTranslationClass {}
 }

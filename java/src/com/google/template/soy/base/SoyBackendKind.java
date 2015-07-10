@@ -25,5 +25,6 @@ public enum SoyBackendKind {
   TOFU,
   JBC_SRC,
   JS_SRC,
-  PYTHON_SRC
+  PYTHON_SRC,
+  PHP_SRC
 }

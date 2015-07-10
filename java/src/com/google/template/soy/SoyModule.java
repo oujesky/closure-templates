@@ -29,6 +29,7 @@ import com.google.template.soy.jbcsrc.api.SoySauceImpl;
 import com.google.template.soy.jssrc.internal.JsSrcModule;
 import com.google.template.soy.parsepasses.CheckFunctionCallsVisitor.CheckFunctionCallsVisitorFactory;
 import com.google.template.soy.parsepasses.contextautoesc.ContextualAutoescaper;
+import com.google.template.soy.phpsrc.internal.PhpSrcModule;
 import com.google.template.soy.pysrc.internal.PySrcModule;
 import com.google.template.soy.shared.internal.SharedModule;
 import com.google.template.soy.tofu.internal.TofuModule;
@@ -49,6 +50,7 @@ public class SoyModule extends AbstractModule {
     install(new TofuModule());
     install(new JsSrcModule());
     install(new PySrcModule());
+    install(new PhpSrcModule());
 
     // Bindings for when explicit dependencies are required.
     // Note: We don't promise to support this. We actually frown upon requireExplicitBindings.

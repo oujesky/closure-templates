@@ -28,6 +28,8 @@ import com.google.template.soy.internal.i18n.BidiGlobalDir;
 import com.google.template.soy.internal.i18n.SoyBidiUtils;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcPrintDirective;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcPrintDirective;
 import com.google.template.soy.shared.restricted.SoyJavaPrintDirective;
@@ -48,7 +50,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 final class BidiUnicodeWrapDirective
-    implements SoyJavaPrintDirective, SoyJsSrcPrintDirective, SoyPySrcPrintDirective {
+    implements SoyJavaPrintDirective, SoyJsSrcPrintDirective, SoyPySrcPrintDirective, SoyPhpSrcPrintDirective {
 
 
   /** Provider for the current bidi global directionality. */
@@ -129,5 +131,11 @@ final class BidiUnicodeWrapDirective
     String codeSnippet = bidiGlobalDirProvider.get().getCodeSnippet();
     return new PyExpr(
         "bidi.unicode_wrap(" + codeSnippet + ", " + value.getText() + ")", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr applyForPhpSrc(PhpExpr value, List<PhpExpr> args) {
+    String codeSnippet = bidiGlobalDirProvider.get().getCodeSnippet();
+    return new PhpExpr(
+            "Bidi::unicodeWrap(" + codeSnippet + ", " + value.getText() + ")", Integer.MAX_VALUE);
   }
 }

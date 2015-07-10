@@ -26,6 +26,9 @@ import com.google.template.soy.exprtree.Operator;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsCodeUtils;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.PhpExprUtils;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.PyExprUtils;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
@@ -44,7 +47,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @SoyPureFunction
-class IsNonnullFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class IsNonnullFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   @Inject
@@ -76,5 +79,11 @@ class IsNonnullFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFu
     // Note: This check could blow up if the variable was never created at all. However, this should
     // not be possible as a variable not found in the function is assumed to be part of opt_data.
     return PyExprUtils.genPyNotNullCheck(args.get(0));
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    // Note: This check could blow up if the variable was never created at all. However, this should
+    // not be possible as a variable not found in the function is assumed to be part of $opt_data.
+    return PhpExprUtils.genPhpNotNullCheck(args.get(0));
   }
 }

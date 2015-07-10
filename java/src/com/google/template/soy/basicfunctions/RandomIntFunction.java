@@ -24,6 +24,8 @@ import com.google.template.soy.exprtree.Operator;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsCodeUtils;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
 import com.google.template.soy.shared.restricted.SoyJavaFunction;
@@ -39,7 +41,7 @@ import javax.inject.Singleton;
  *
  */
 @Singleton
-class RandomIntFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class RandomIntFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   @Inject
@@ -73,5 +75,11 @@ class RandomIntFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFu
     PyExpr arg = args.get(0);
     // Subtract 1 from the argument as the python randint function is inclusive on both sides.
     return new PyExpr("random.randint(0, " + arg.getText() + " - 1)", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    PhpExpr arg = args.get(0);
+    // Subtract 1 from the argument as the PHP mt_rand function is inclusive on both sides.
+    return new PhpExpr("mt_rand(0, " + arg.getText() + " - 1)", Integer.MAX_VALUE);
   }
 }

@@ -99,6 +99,17 @@ public class NodeContentKinds {
           .put(ContentKind.TEXT, "sanitize.UnsanitizedText")
           .build();
 
+    /** The PHP sanitized classes. */
+    private static final ImmutableMap<ContentKind, String> KIND_TO_PHP_SANITIZED_NAME =
+            ImmutableMap.<ContentKind, String>builder()
+                    .put(ContentKind.HTML, "\\Goog\\Soy\\SanitizedHtml")
+                    .put(ContentKind.ATTRIBUTES, "\\Goog\\Soy\\SanitizedHtmlAttribute")
+                    .put(ContentKind.JS, "\\Goog\\Soy\\SanitizedJs")
+                    .put(ContentKind.URI, "\\Goog\\Soy\\SanitizedUri")
+                    .put(ContentKind.CSS, "\\Goog\\Soy\\SanitizedCss")
+                    .put(ContentKind.TEXT, "\\Goog\\Soy\\UnsanitizedText")
+                    .build();
+
   static {
     if (!KIND_TO_JS_CTOR_NAME.keySet().containsAll(EnumSet.allOf(ContentKind.class))) {
       throw new AssertionError("Not all ContentKind enums have a JS constructor");
@@ -181,6 +192,15 @@ public class NodeContentKinds {
   public static String toPySanitizedContentOrdainer(ContentKind contentKind) {
     // Sanitization classes are defined in sanitize.py.
     return Preconditions.checkNotNull(KIND_TO_PY_SANITIZED_NAME.get(contentKind));
+  }
+
+
+  /**
+   * Given a {@link ContentKind}, returns the corresponding PHP sanitize class.
+   */
+  public static String toPhpSanitizedContentOrdainer(ContentKind contentKind) {
+      // Sanitization classes are defined in Sanitized*.php.
+      return Preconditions.checkNotNull(KIND_TO_PHP_SANITIZED_NAME.get(contentKind));
   }
 
 

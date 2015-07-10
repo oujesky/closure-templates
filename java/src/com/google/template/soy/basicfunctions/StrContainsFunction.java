@@ -26,6 +26,9 @@ import com.google.template.soy.exprtree.Operator;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.JsExprUtils;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.PhpExprUtils;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.PyExprUtils;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
@@ -49,7 +52,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @SoyPureFunction
-class StrContainsFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class StrContainsFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   @Inject
@@ -98,5 +101,14 @@ class StrContainsFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrc
 
     String exprText = "(" + arg0 + ").find(" + arg1 + ") != -1";
     return new PyExpr(exprText, PyExprUtils.pyPrecedenceForOperator(Operator.NOT_EQUAL));
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    // Coerce SanitizedContent args to strings.
+    String arg0 = args.get(0).toPhpString().getText();
+    String arg1 = args.get(1).toPhpString().getText();
+
+    String exprText = "mb_strpos(" + arg0 + ", " + arg1 + ") !== false";
+    return new PhpExpr(exprText, PhpExprUtils.phpPrecedenceForOperator(Operator.NOT_EQUAL));
   }
 }

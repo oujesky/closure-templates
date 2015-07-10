@@ -61,6 +61,8 @@ import com.google.template.soy.parsepasses.contextautoesc.ContentSecurityPolicyP
 import com.google.template.soy.parsepasses.contextautoesc.ContextualAutoescaper;
 import com.google.template.soy.parsepasses.contextautoesc.DerivedTemplateUtils;
 import com.google.template.soy.parsepasses.contextautoesc.SoyAutoescapeException;
+import com.google.template.soy.phpsrc.SoyPhpSrcOptions;
+import com.google.template.soy.phpsrc.internal.PhpSrcMain;
 import com.google.template.soy.pysrc.SoyPySrcOptions;
 import com.google.template.soy.pysrc.internal.PySrcMain;
 import com.google.template.soy.shared.SoyAstCache;
@@ -573,6 +575,9 @@ public final class SoyFileSet {
   /** Provider for getting an instance of PySrcMain. */
   private final Provider<PySrcMain> pySrcMainProvider;
 
+  /** Provider for getting an instance of PhpSrcMain. */
+  private final Provider<PhpSrcMain> phpSrcMainProvider;
+
   /** Factory for creating an instance of CheckFunctionCallsVisitor. */
   private final CheckFunctionCallsVisitorFactory checkFunctionCallsVisitorFactory;
 
@@ -607,6 +612,7 @@ public final class SoyFileSet {
    * @param baseTofuFactory Factory for creating an instance of BaseTofu.
    * @param jsSrcMainProvider Provider for getting an instance of JsSrcMain.
    * @param pySrcMainProvider Provider for getting an instance of PySrcMain.
+   * @param phpSrcMainProvider Provider for getting an instance of PhpSrcMain.
    * @param checkFunctionCallsVisitorFactory Factory for creating an instance of
    *     CheckFunctionCallsVisitor.
    * @param contextualAutoescaper The instance of ContextualAutoescaper to use.
@@ -625,6 +631,7 @@ public final class SoyFileSet {
       SoySauceImpl.Factory soyTemplatesFactory,
       Provider<JsSrcMain> jsSrcMainProvider,
       Provider<PySrcMain> pySrcMainProvider,
+      Provider<PhpSrcMain> phpSrcMainProvider,
       CheckFunctionCallsVisitorFactory checkFunctionCallsVisitorFactory,
       ContextualAutoescaper contextualAutoescaper,
       SimplifyVisitor simplifyVisitor,
@@ -641,6 +648,7 @@ public final class SoyFileSet {
     this.baseTofuFactory = baseTofuFactory;
     this.jsSrcMainProvider = jsSrcMainProvider;
     this.pySrcMainProvider = pySrcMainProvider;
+    this.phpSrcMainProvider = phpSrcMainProvider;
     this.checkFunctionCallsVisitorFactory = checkFunctionCallsVisitorFactory;
     this.contextualAutoescaper = contextualAutoescaper;
     this.simplifyVisitor = simplifyVisitor;
@@ -1111,6 +1119,45 @@ public final class SoyFileSet {
 
     pySrcMainProvider.get().genPyFiles(
         soyTree, pySrcOptions, outputPathFormat, inputFilePathPrefix);
+
+    return result();
+  }
+
+  /**
+   * Compiles this Soy file set into PHP source code files and writes these PHP files to
+   * disk.
+   *
+   * @param outputPathFormat The format string defining how to build the output file path
+   *     corresponding to an input file path.
+   * @param inputFilePathPrefix The prefix prepended to all input file paths (can be empty string).
+   * @param phpSrcOptions The compilation options for the PHP Src output target.
+   * @throws SoySyntaxException If a syntax error is found.
+   * @throws IOException If there is an error in opening/reading a message file or opening/writing
+   *     an output JS file.
+   */
+  CompilationResult compileToPhpSrcFiles(
+          String outputPathFormat, String inputFilePathPrefix, SoyPhpSrcOptions phpSrcOptions)
+          throws SoySyntaxException, IOException {
+
+    SyntaxVersion declaredSyntaxVersion =
+            generalOptions.getDeclaredSyntaxVersion(SyntaxVersion.V2_2);
+
+    Checkpoint checkpoint = errorReporter.checkpoint();
+    SoyFileSetNode soyTree = new SoyFileSetParser(
+            typeRegistry, cache, declaredSyntaxVersion, soyFileSuppliers, errorReporter)
+            .parse();
+    if (errorReporter.errorsSince(checkpoint)) {
+      return failure();
+    }
+
+    checkpoint = errorReporter.checkpoint();
+    runMiddleendPasses(soyTree, declaredSyntaxVersion);
+    if (errorReporter.errorsSince(checkpoint)) {
+      return failure();
+    }
+
+    phpSrcMainProvider.get().genPhpFiles(
+            soyTree, phpSrcOptions, outputPathFormat, inputFilePathPrefix);
 
     return result();
   }

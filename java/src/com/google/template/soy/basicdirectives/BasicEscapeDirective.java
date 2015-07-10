@@ -22,6 +22,8 @@ import com.google.template.soy.data.SoyValue;
 import com.google.template.soy.data.restricted.StringData;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcPrintDirective;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcPrintDirective;
 import com.google.template.soy.shared.restricted.Sanitizers;
@@ -43,7 +45,7 @@ import javax.inject.Singleton;
  *
  */
 public abstract class BasicEscapeDirective
-    implements SoyJavaPrintDirective, SoyJsSrcPrintDirective, SoyPySrcPrintDirective {
+    implements SoyJavaPrintDirective, SoyJsSrcPrintDirective, SoyPySrcPrintDirective, SoyPhpSrcPrintDirective {
 
 
   private static final ImmutableSet<Integer> VALID_ARGS_SIZES = ImmutableSet.of(0);
@@ -92,6 +94,10 @@ public abstract class BasicEscapeDirective
   @Override public PyExpr applyForPySrc(PyExpr value, List<PyExpr> args) {
     String pyFnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name.substring(1));
     return new PyExpr("sanitize." + pyFnName + "(" + value.getText() + ")", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr applyForPhpSrc(PhpExpr value, List<PhpExpr> args) {
+    return new PhpExpr("Sanitize::" + name.substring(1) + "(" + value.getText() + ")", Integer.MAX_VALUE);
   }
 
 

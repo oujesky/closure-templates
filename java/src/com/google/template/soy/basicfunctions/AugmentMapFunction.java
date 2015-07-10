@@ -25,6 +25,8 @@ import com.google.template.soy.data.SoyValue;
 import com.google.template.soy.data.SoyValueHelper;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.PyFunctionExprBuilder;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
@@ -44,7 +46,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @SoyPureFunction
-class AugmentMapFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class AugmentMapFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   /** The SoyValueHelper instance to use internally. */
@@ -101,5 +103,13 @@ class AugmentMapFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcF
     PyFunctionExprBuilder fnBuilder = new PyFunctionExprBuilder("dict");
     fnBuilder.addArg(args.get(0)).setUnpackedKwargs(args.get(1));
     return fnBuilder.asPyExpr();
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    PhpExpr arg0 = args.get(0);
+    PhpExpr arg1 = args.get(1);
+
+    String exprText = "array_replace(" + arg0.getText() + ", " + arg1.getText() + ")";
+    return new PhpExpr(exprText, Integer.MAX_VALUE);
   }
 }

@@ -22,6 +22,9 @@ import com.google.template.soy.data.SoyValue;
 import com.google.template.soy.data.SoyValueHelper;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.PhpArrayExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.PyListExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
@@ -46,7 +49,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @SoyPureFunction
-class KeysFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class KeysFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   /** The SoyValueHelper instance to use internally. */
@@ -86,5 +89,11 @@ class KeysFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunctio
     PyExpr arg = args.get(0);
 
     return new PyListExpr("(" + arg.getText() + ").keys()", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    PhpExpr arg = args.get(0);
+
+    return new PhpArrayExpr("array_keys(" + arg.getText() + ")", Integer.MAX_VALUE);
   }
 }

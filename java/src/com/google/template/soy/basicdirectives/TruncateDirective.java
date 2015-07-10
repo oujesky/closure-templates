@@ -22,6 +22,9 @@ import com.google.template.soy.data.SoyValue;
 import com.google.template.soy.data.restricted.StringData;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcPrintDirective;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.PhpFunctionExprBuilder;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.PyFunctionExprBuilder;
 import com.google.template.soy.pysrc.restricted.SoyPySrcPrintDirective;
@@ -43,7 +46,7 @@ import javax.inject.Singleton;
 @Singleton
 @SoyPurePrintDirective
 final class TruncateDirective implements SoyJavaPrintDirective, SoyJsSrcPrintDirective,
-    SoyPySrcPrintDirective {
+    SoyPySrcPrintDirective, SoyPhpSrcPrintDirective {
 
 
   @Inject
@@ -136,5 +139,17 @@ final class TruncateDirective implements SoyJavaPrintDirective, SoyJsSrcPrintDir
     PyFunctionExprBuilder fnBuilder = new PyFunctionExprBuilder("directives.truncate");
     fnBuilder.addArg(input).addArg(maxLen).addArg(doAddEllipsis);
     return fnBuilder.asPyStringExpr();
+  }
+
+  @Override public PhpExpr applyForPhpSrc(PhpExpr value, List<PhpExpr> args) {
+    // Truncation always wants a string, so to potentially save an unnecessary conversion, we do
+    // optional coercing at compile time.
+    PhpExpr input = value.toPhpString();
+    PhpExpr maxLen = args.get(0);
+    PhpExpr doAddEllipsis = (args.size() == 2) ? args.get(1) : new PhpExpr("true", Integer.MAX_VALUE);
+
+    PhpFunctionExprBuilder fnBuilder = new PhpFunctionExprBuilder("Directives::truncate");
+    fnBuilder.addArg(input).addArg(maxLen).addArg(doAddEllipsis);
+    return fnBuilder.asPhpStringExpr();
   }
 }

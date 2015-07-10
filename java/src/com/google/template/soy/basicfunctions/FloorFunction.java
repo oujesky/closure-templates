@@ -21,6 +21,8 @@ import com.google.template.soy.data.SoyValue;
 import com.google.template.soy.data.restricted.IntegerData;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
 import com.google.template.soy.shared.restricted.SoyJavaFunction;
@@ -38,7 +40,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @SoyPureFunction
-class FloorFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class FloorFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   @Inject
@@ -73,5 +75,11 @@ class FloorFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFuncti
     PyExpr arg = args.get(0);
 
     return new PyExpr("math.floor(" + arg.getText() + ")", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    PhpExpr arg = args.get(0);
+
+    return new PhpExpr("floor(" + arg.getText() + ")", Integer.MAX_VALUE);
   }
 }

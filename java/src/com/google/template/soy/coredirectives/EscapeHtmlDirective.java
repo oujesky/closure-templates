@@ -24,6 +24,8 @@ import com.google.template.soy.data.SoyValue;
 import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcPrintDirective;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcPrintDirective;
 import com.google.template.soy.shared.restricted.EscapingConventions;
@@ -44,7 +46,7 @@ import javax.inject.Singleton;
 @Singleton
 @SoyPurePrintDirective
 public class EscapeHtmlDirective implements SoyJavaPrintDirective, SoyJsSrcPrintDirective,
-    SoyPySrcPrintDirective {
+    SoyPySrcPrintDirective, SoyPhpSrcPrintDirective {
 
 
   public static final String NAME = "|escapeHtml";
@@ -87,5 +89,9 @@ public class EscapeHtmlDirective implements SoyJavaPrintDirective, SoyJsSrcPrint
 
   @Override public PyExpr applyForPySrc(PyExpr value, List<PyExpr> args) {
     return new PyExpr("sanitize.escape_html(" + value.getText() + ")", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr applyForPhpSrc(PhpExpr value, List<PhpExpr> args) {
+    return new PhpExpr("Sanitize::escapeHtml(" + value.getText() + ")", Integer.MAX_VALUE);
   }
 }

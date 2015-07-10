@@ -65,7 +65,7 @@ public final class EscapingConventions {
    * The list of potential languages which are used by the escapers.
    */
   public static enum EscapingLanguage {
-    JAVASCRIPT, PYTHON
+    JAVASCRIPT, PYTHON, PHP
   }
 
 

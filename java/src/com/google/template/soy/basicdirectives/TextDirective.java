@@ -22,6 +22,8 @@ import com.google.template.soy.data.SoyValue;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.JsExprUtils;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcPrintDirective;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcPrintDirective;
 import com.google.template.soy.shared.restricted.SoyJavaPrintDirective;
@@ -45,7 +47,7 @@ import javax.inject.Singleton;
 @Singleton
 @SoyPurePrintDirective
 final class TextDirective
-    implements SoyJavaPrintDirective, SoyJsSrcPrintDirective, SoyPySrcPrintDirective {
+    implements SoyJavaPrintDirective, SoyJsSrcPrintDirective, SoyPySrcPrintDirective, SoyPhpSrcPrintDirective {
 
 
   @Inject
@@ -80,5 +82,9 @@ final class TextDirective
 
   @Override public PyExpr applyForPySrc(PyExpr value, List<PyExpr> args) {
     return value.toPyString();
+  }
+
+  @Override public PhpExpr applyForPhpSrc(PhpExpr value, List<PhpExpr> args) {
+    return value.toPhpString();
   }
 }

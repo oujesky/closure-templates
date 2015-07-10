@@ -23,6 +23,9 @@ import com.google.template.soy.exprtree.Operator;
 import com.google.template.soy.internal.i18n.BidiGlobalDir;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.PhpExprUtils;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.PyExprUtils;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
@@ -41,7 +44,7 @@ import javax.inject.Singleton;
  *
  */
 @Singleton
-class BidiStartEdgeFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class BidiStartEdgeFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   /** Provider for the current bidi global directionality. */
@@ -86,5 +89,12 @@ class BidiStartEdgeFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPyS
     return new PyExpr(
         "'right' if (" + bidiGlobalDir.getCodeSnippet() + ") < 0 else 'left'",
         PyExprUtils.pyPrecedenceForOperator(Operator.CONDITIONAL));
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    BidiGlobalDir bidiGlobalDir = bidiGlobalDirProvider.get();
+    return new PhpExpr(
+        "(" + bidiGlobalDir.getCodeSnippet() + ") < 0 ? 'right' : 'left'",
+        PhpExprUtils.phpPrecedenceForOperator(Operator.CONDITIONAL));
   }
 }

@@ -23,6 +23,9 @@ import com.google.template.soy.exprtree.Operator;
 import com.google.template.soy.internal.i18n.BidiGlobalDir;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.PhpExprUtils;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
 import com.google.template.soy.shared.restricted.SoyJavaFunction;
@@ -40,7 +43,7 @@ import javax.inject.Singleton;
  *
  */
 @Singleton
-class BidiMarkFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class BidiMarkFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   /** Provider for the current bidi global directionality. */
@@ -86,5 +89,12 @@ class BidiMarkFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFun
     return new PyExpr(
         "'\\u200F' if (" + bidiGlobalDir.getCodeSnippet() + ") < 0 else '\\u200E'",
         Operator.CONDITIONAL.getPrecedence());
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+      BidiGlobalDir bidiGlobalDir = bidiGlobalDirProvider.get();
+      return new PhpExpr(
+              "(" + bidiGlobalDir.getCodeSnippet() + ") < 0 ? '\\u200F' : '\\u200E'",
+              PhpExprUtils.phpPrecedenceForOperator(Operator.CONDITIONAL));
   }
 }

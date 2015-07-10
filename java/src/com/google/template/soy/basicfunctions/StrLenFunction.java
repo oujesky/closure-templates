@@ -25,6 +25,8 @@ import com.google.template.soy.data.restricted.StringData;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.JsExprUtils;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
 import com.google.template.soy.shared.restricted.SoyJavaFunction;
@@ -45,7 +47,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @SoyPureFunction
-class StrLenFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class StrLenFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   @Inject
@@ -78,5 +80,9 @@ class StrLenFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunct
 
   @Override public PyExpr computeForPySrc(List<PyExpr> args) {
     return new PyExpr("len(" + args.get(0).toPyString().getText() + ")", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    return new PhpExpr("mb_strlen(" + args.get(0).toPhpString().getText() + ")", Integer.MAX_VALUE);
   }
 }

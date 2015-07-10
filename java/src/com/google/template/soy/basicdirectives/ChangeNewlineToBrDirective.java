@@ -25,6 +25,8 @@ import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
 import com.google.template.soy.data.restricted.StringData;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcPrintDirective;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcPrintDirective;
 import com.google.template.soy.shared.restricted.SoyJavaPrintDirective;
@@ -45,7 +47,7 @@ import javax.inject.Singleton;
 @Singleton
 @SoyPurePrintDirective
 final class ChangeNewlineToBrDirective implements SanitizedContentOperator, SoyJavaPrintDirective,
-    SoyJsSrcPrintDirective, SoyPySrcPrintDirective {
+    SoyJsSrcPrintDirective, SoyPySrcPrintDirective, SoyPhpSrcPrintDirective {
 
 
   private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r\\n|\\r|\\n");
@@ -97,5 +99,9 @@ final class ChangeNewlineToBrDirective implements SanitizedContentOperator, SoyJ
 
   @Override public PyExpr applyForPySrc(PyExpr value, List<PyExpr> args) {
     return new PyExpr("sanitize.change_newline_to_br(" + value.getText() + ")", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr applyForPhpSrc(PhpExpr value, List<PhpExpr> args) {
+    return new PhpExpr("Sanitize::changeNewlineToBr(" + value.getText() + ")", Integer.MAX_VALUE);
   }
 }

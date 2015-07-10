@@ -26,6 +26,8 @@ import com.google.template.soy.internal.targetexpr.TargetExpr;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsCodeUtils;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
 import com.google.template.soy.shared.restricted.SoyJavaFunction;
@@ -44,7 +46,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @SoyPureFunction
-class RoundFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class RoundFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   @Inject
@@ -139,6 +141,33 @@ class RoundFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFuncti
         return new PyExpr("int(" + roundedValue + ")", Integer.MAX_VALUE);
       } else {
         return new PyExpr(roundedValue.toString(), Integer.MAX_VALUE);
+      }
+    } else {
+      throw new IllegalArgumentException(
+          "Second argument to round() function is " + precisionAsInt +
+          ", which is too large in magnitude.");
+    }
+  }
+
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    PhpExpr value = args.get(0);
+    PhpExpr precision = (args.size() == 2) ? args.get(1) : null;
+
+    int precisionAsInt = convertNumDigits(precision);
+    boolean isLiteral = precisionAsInt != Integer.MIN_VALUE;
+
+    if (precisionAsInt >= -12 && precisionAsInt <= 12 || !isLiteral) {
+      StringBuilder roundedValue = new StringBuilder("round(")
+              .append(value.getText())
+              .append(", ")
+              .append(isLiteral ? precisionAsInt : precision.getText())
+              .append(")");
+      // The precision is less than 1. Convert to an int to prevent extraneous decimals in display.
+      if (isLiteral && precisionAsInt <= 0) {
+        return new PhpExpr("(int)" + roundedValue, Integer.MAX_VALUE);
+      } else {
+        return new PhpExpr(roundedValue.toString(), Integer.MAX_VALUE);
       }
     } else {
       throw new IllegalArgumentException(

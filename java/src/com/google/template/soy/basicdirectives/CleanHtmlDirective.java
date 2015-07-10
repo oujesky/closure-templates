@@ -28,6 +28,8 @@ import com.google.template.soy.data.SoyValue;
 import com.google.template.soy.internal.targetexpr.TargetExpr;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcPrintDirective;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcPrintDirective;
 import com.google.template.soy.shared.restricted.Sanitizers;
@@ -59,7 +61,7 @@ import javax.inject.Singleton;
 @Singleton
 @SoyPurePrintDirective
 final class CleanHtmlDirective implements SoyJavaPrintDirective, SoyJsSrcPrintDirective,
-    SoyPySrcPrintDirective {
+    SoyPySrcPrintDirective, SoyPhpSrcPrintDirective {
 
 
   private static final Joiner ARG_JOINER = Joiner.on(", ");
@@ -107,6 +109,12 @@ final class CleanHtmlDirective implements SoyJavaPrintDirective, SoyJsSrcPrintDi
     String optionalSafeTagsArg = generateOptionalSafeTagsArg(args);
     return new PyExpr(
         "sanitize.clean_html(" + value.getText() + optionalSafeTagsArg + ")", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr applyForPhpSrc(PhpExpr value, List<PhpExpr> args) {
+    String optionalSafeTagsArg = generateOptionalSafeTagsArg(args);
+    return new PhpExpr(
+            "Sanitize::cleanHtml(" + value.getText() + optionalSafeTagsArg + ")", Integer.MAX_VALUE);
   }
 
   /**

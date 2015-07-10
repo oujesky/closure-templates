@@ -22,6 +22,9 @@ import com.google.template.soy.data.restricted.FloatData;
 import com.google.template.soy.data.restricted.IntegerData;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcFunction;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.PhpFunctionExprBuilder;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcFunction;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.PyFunctionExprBuilder;
 import com.google.template.soy.pysrc.restricted.SoyPySrcFunction;
@@ -40,7 +43,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @SoyPureFunction
-class MaxFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction {
+class MaxFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction, SoyPhpSrcFunction {
 
 
   @Inject
@@ -80,5 +83,13 @@ class MaxFunction implements SoyJavaFunction, SoyJsSrcFunction, SoyPySrcFunction
 
     PyFunctionExprBuilder fnBuilder = new PyFunctionExprBuilder("max");
     return fnBuilder.addArg(arg0).addArg(arg1).asPyExpr();
+  }
+
+  @Override public PhpExpr computeForPhpSrc(List<PhpExpr> args) {
+    PhpExpr arg0 = args.get(0);
+    PhpExpr arg1 = args.get(1);
+
+    PhpFunctionExprBuilder fnBuilder = new PhpFunctionExprBuilder("max");
+    return fnBuilder.addArg(arg0).addArg(arg1).asPhpExpr();
   }
 }

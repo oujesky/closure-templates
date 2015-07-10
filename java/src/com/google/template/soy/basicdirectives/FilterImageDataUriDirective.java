@@ -20,6 +20,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.template.soy.data.SoyValue;
 import com.google.template.soy.jssrc.restricted.JsExpr;
 import com.google.template.soy.jssrc.restricted.SoyJsSrcPrintDirective;
+import com.google.template.soy.phpsrc.restricted.PhpExpr;
+import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
 import com.google.template.soy.pysrc.restricted.PyExpr;
 import com.google.template.soy.pysrc.restricted.SoyPySrcPrintDirective;
 import com.google.template.soy.shared.restricted.Sanitizers;
@@ -45,7 +47,7 @@ import javax.inject.Singleton;
 @Singleton
 @SoyPurePrintDirective
 final class FilterImageDataUriDirective implements SoyJavaPrintDirective, SoyJsSrcPrintDirective,
-    SoyPySrcPrintDirective{
+    SoyPySrcPrintDirective, SoyPhpSrcPrintDirective {
 
 
   private static final Set<Integer> VALID_ARGS_SIZES = ImmutableSet.of(0);
@@ -77,5 +79,9 @@ final class FilterImageDataUriDirective implements SoyJavaPrintDirective, SoyJsS
 
   @Override public PyExpr applyForPySrc(PyExpr value, List<PyExpr> args) {
     return new PyExpr("sanitize.filter_image_data_uri(" + value.getText() + ")", Integer.MAX_VALUE);
+  }
+
+  @Override public PhpExpr applyForPhpSrc(PhpExpr value, List<PhpExpr> args) {
+    return new PhpExpr("Sanitize::filterImageDataUri(" + value.getText() + ")", Integer.MAX_VALUE);
   }
 }
