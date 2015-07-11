@@ -201,7 +201,7 @@ private static $_ESCAPE_MAP_FOR_ESCAPE_URI__AND__NORMALIZE_URI__AND__FILTER_NORM
 private static function _REPLACER_FOR_ESCAPE_URI__AND__NORMALIZE_URI__AND__FILTER_NORMALIZE_URI($match) {
   $ch = $match[0];
   $map = self::$_ESCAPE_MAP_FOR_ESCAPE_URI__AND__NORMALIZE_URI__AND__FILTER_NORMALIZE_URI;
-  return isset($map[$ch]) ? $map[$ch] : $ch;
+  return isset($map[$ch]) ? $map[$ch] : '';
 }
 
 const _MATCHER_FOR_ESCAPE_HTML = '~[\x00\x22\x26\x27\x3c\x3e]~u';
@@ -212,15 +212,15 @@ const _MATCHER_FOR_ESCAPE_HTML_NOSPACE = '~[\x00\x09-\x0d \x22\x26\x27\x2d\/\x3c
 
 const _MATCHER_FOR_NORMALIZE_HTML_NOSPACE = '~[\x00\x09-\x0d \x22\x27\x2d\/\x3c-\x3e`\x85\xa0\x{2028}\x{2029}]~u';
 
-const _MATCHER_FOR_ESCAPE_JS_STRING = '~[\x00\x08-\x0d\x22\x26\x27\/\x3c-\x3e\\\x85\x{2028}\x{2029}]~u';
+const _MATCHER_FOR_ESCAPE_JS_STRING = '~[\x00\x08-\x0d\x22\x26\x27\/\x3c-\x3e\\\\\x85\x{2028}\x{2029}]~u';
 
 const _MATCHER_FOR_ESCAPE_JS_REGEX = '~[\x00\x08-\x0d\x22\x24\x26-\/\x3a\x3c-\x3f\x5b-\x5e\x7b-\x7d\x85\x{2028}\x{2029}]~u';
 
-const _MATCHER_FOR_ESCAPE_CSS_STRING = '~[\x00\x08-\x0d\x22\x26-\x2a\/\x3a-\x3e@\\\x7b\x7d\x85\xa0\x{2028}\x{2029}]~u';
+const _MATCHER_FOR_ESCAPE_CSS_STRING = '~[\x00\x08-\x0d\x22\x26-\x2a\/\x3a-\x3e@\\\\\x7b\x7d\x85\xa0\x{2028}\x{2029}]~u';
 
 const _MATCHER_FOR_ESCAPE_URI = '~[\x00-\x2c\/\x3a-@\x5b-\x5e`\x7b-\x7d\x7f]~u';
 
-const _MATCHER_FOR_NORMALIZE_URI__AND__FILTER_NORMALIZE_URI = '~[\x00- \x22\x27-\x29\x3c\x3e\\\x7b\x7d\x7f\x85\xa0\x{2028}\x{2029}\x{ff01}\x{ff03}\x{ff04}\x{ff06}-\x{ff0c}\x{ff0f}\x{ff1a}\x{ff1b}\x{ff1d}\x{ff1f}\x{ff20}\x{ff3b}\x{ff3d}]~u';
+const _MATCHER_FOR_NORMALIZE_URI__AND__FILTER_NORMALIZE_URI = '~[\x00- \x22\x27-\x29\x3c\x3e\\\\\x7b\x7d\x7f\x85\xa0\x{2028}\x{2029}\x{ff01}\x{ff03}\x{ff04}\x{ff06}-\x{ff0c}\x{ff0f}\x{ff1a}\x{ff1b}\x{ff1d}\x{ff1f}\x{ff20}\x{ff3b}\x{ff3d}]~u';
 
 const _FILTER_FOR_FILTER_CSS_VALUE = '~^(?!-*(?:expression|(?:moz-)?binding))(?:[.#]?-?(?:[_a-z0-9-]+)(?:-[_a-z0-9-]+)*-?|-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[a-z]{1,2}|%)?|!important|)\Z~ui';
 

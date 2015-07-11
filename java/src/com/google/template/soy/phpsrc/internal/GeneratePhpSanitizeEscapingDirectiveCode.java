@@ -151,8 +151,13 @@ public final class GeneratePhpSanitizeEscapingDirectiveCode
     }
 
     private String convertPhpRegex(String regex) {
-        // PHP PCRE does not support uXXXX syntax, we need to convert to x{XXXX}
-        return regex.replaceAll("\\\\u([a-fA-F0-9]{4})", "\\\\x{$1}");
+
+        return regex
+                // PHP PCRE does not support uXXXX syntax, we need to convert to x{XXXX}
+                .replaceAll("\\\\u([a-fA-F0-9]{4})", "\\\\x{$1}")
+                // \\ => \\\\ for literal slash
+                .replaceAll("\\\\\\\\", "\\\\\\\\\\\\\\\\");
+
     }
 
     @Override protected void generateReplacerFunction(StringBuilder outputCode, String mapName) {
