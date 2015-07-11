@@ -18,25 +18,8 @@ package com.google.template.soy.phpsrc.internal;
 
 import com.google.template.soy.error.ErrorReporter;
 import com.google.template.soy.shared.internal.ApiCallScope;
-import com.google.template.soy.soytree.AbstractReturningSoyNodeVisitor;
-import com.google.template.soy.soytree.CallNode;
-import com.google.template.soy.soytree.CallParamContentNode;
-import com.google.template.soy.soytree.CallParamValueNode;
-import com.google.template.soy.soytree.DebuggerNode;
-import com.google.template.soy.soytree.ForNode;
-import com.google.template.soy.soytree.ForeachNode;
-import com.google.template.soy.soytree.IfCondNode;
-import com.google.template.soy.soytree.IfElseNode;
-import com.google.template.soy.soytree.IfNode;
-import com.google.template.soy.soytree.LetNode;
-import com.google.template.soy.soytree.LogNode;
-import com.google.template.soy.soytree.MsgFallbackGroupNode;
-import com.google.template.soy.soytree.MsgNode;
-import com.google.template.soy.soytree.PrintNode;
-import com.google.template.soy.soytree.RawTextNode;
-import com.google.template.soy.soytree.SoyNode;
+import com.google.template.soy.soytree.*;
 import com.google.template.soy.soytree.SoyNode.ParentSoyNode;
-import com.google.template.soy.soytree.SwitchNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -109,6 +92,10 @@ class IsComputableAsPhpExprVisitor extends AbstractReturningSoyNodeVisitor<Boole
 
     @Override protected Boolean visitLetNode(LetNode node) {
         return false;
+    }
+
+    @Override protected Boolean visitCssNode(CssNode node) {
+        return true;
     }
 
     @Override protected Boolean visitIfNode(IfNode node) {

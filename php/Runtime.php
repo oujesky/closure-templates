@@ -14,6 +14,11 @@ class Runtime
 
 	private static $delegateRegistry = [];
 
+	/**
+	 * @var array The mapping of css class names for {@link getCssName()}
+	 */
+	private static $cssNameMapping;
+
 
 	/**
 	 * A helper to implement the Soy Function checkNotNull.
@@ -133,6 +138,47 @@ class Runtime
 	private static function genDelegateId($templateId, $variant = '')
 	{
 		return 'key_' . $templateId . ':' . $variant;
+	}
+
+
+
+	/**
+	 * Return the mapped css class name with modifier.
+	 *
+	 * Following the pattern of goog.getCssName in closure, this function maps a css
+	 * class name to its proper name, and applies an optional modifier.
+	 *
+	 * If no mapping is present, the $className and $modifier are joined with hyphens
+	 * and returned directly.
+	 *
+	 * If a mapping is present, the resulting css name will be retrieved from the
+	 * mapping and returned.
+	 *
+	 * If one argument is passed it will be processed, if two are passed only the
+	 * modifier will be processed, as it is assumed the first argument was generated
+	 * as a result of calling goog.getCssName.
+	 *
+	 * @param string $className The class name to look up.
+	 * @param string|null $modifier An optional modifier to append to the $className.
+	 *
+	 * @return string A mapped class name with optional modifier.
+	 */
+	public static function getCssName($className, $modifier = null)
+	{
+		$pieces = [$className];
+		if ($modifier)
+		{
+			$pieces[] = $modifier;
+		}
+
+		if (self::$cssNameMapping)
+		{
+			// Only map the last piece of the name.
+			$last = array_pop($pieces);
+			$pieces[] = isset(self::$cssNameMapping[$last]) ? self::$cssNameMapping[$last] : $last;
+		}
+
+		return implode('-', $pieces);
 	}
 
 

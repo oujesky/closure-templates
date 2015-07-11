@@ -22,7 +22,6 @@ import com.google.template.soy.MainClassUtils.Main;
 import com.google.template.soy.base.SoySyntaxException;
 import com.google.template.soy.basetree.SyntaxVersion;
 import com.google.template.soy.phpsrc.SoyPhpSrcOptions;
-import com.google.template.soy.shared.SoyGeneralOptions.CssHandlingScheme;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -104,6 +103,7 @@ public final class SoyToPhpSrcCompiler {
           usage = "User-declared syntax version for the Soy file bundle (e.g. 2.2, 2.3).")
   private String syntaxVersion = "";
 
+  // TODO(user): remove
   @Option(name = "--cssHandlingScheme",
           usage = "The scheme to use for handling 'css' commands. Specifying 'literal' will"
                   + " cause command text to be inserted as literal text. Specifying 'reference'"
@@ -195,7 +195,6 @@ public final class SoyToPhpSrcCompiler {
     if (cssHandlingSchemeUc.equals("GOOG")) {
       exitWithErrorFn.apply("CSS handling scheme 'GOOG' is not support in PHP.");
     }
-    sfsBuilder.setCssHandlingScheme(CssHandlingScheme.valueOf(cssHandlingSchemeUc));
     if (compileTimeGlobalsFile.length() > 0) {
       sfsBuilder.setCompileTimeGlobals(new File(compileTimeGlobalsFile));
     }

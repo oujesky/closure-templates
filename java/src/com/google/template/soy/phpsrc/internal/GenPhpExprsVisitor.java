@@ -32,19 +32,8 @@ import com.google.template.soy.phpsrc.restricted.PhpExpr;
 import com.google.template.soy.phpsrc.restricted.PhpExprUtils;
 import com.google.template.soy.phpsrc.restricted.PhpStringExpr;
 import com.google.template.soy.phpsrc.restricted.SoyPhpSrcPrintDirective;
-import com.google.template.soy.soytree.AbstractSoyNodeVisitor;
-import com.google.template.soy.soytree.CallNode;
-import com.google.template.soy.soytree.CallParamContentNode;
-import com.google.template.soy.soytree.IfCondNode;
-import com.google.template.soy.soytree.IfElseNode;
-import com.google.template.soy.soytree.IfNode;
-import com.google.template.soy.soytree.MsgFallbackGroupNode;
-import com.google.template.soy.soytree.PrintDirectiveNode;
-import com.google.template.soy.soytree.PrintNode;
-import com.google.template.soy.soytree.RawTextNode;
-import com.google.template.soy.soytree.SoyNode;
+import com.google.template.soy.soytree.*;
 import com.google.template.soy.soytree.SoyNode.ParentSoyNode;
-import com.google.template.soy.soytree.SoySyntaxExceptionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -239,6 +228,20 @@ public class GenPhpExprsVisitor extends AbstractSoyNodeVisitor<List<PhpExpr>> {
             msg = directive.applyForPhpSrc(msg, ImmutableList.<PhpExpr>of());
         }
         phpExprs.add(msg);
+    }
+
+    @Override protected void visitCssNode(CssNode node) {
+        StringBuilder sb = new StringBuilder("Runtime::getCssName(");
+
+        ExprRootNode componentNameExpr = node.getComponentNameExpr();
+        if (componentNameExpr != null) {
+            TranslateToPhpExprVisitor translator = translateToPhpExprVisitorFactory.create(localVarExprs);
+            PhpExpr basePhpExpr = translator.exec(componentNameExpr);
+            sb.append(basePhpExpr.getText()).append(", ");
+        }
+
+        sb.append("'").append(node.getSelectorText()).append("');");
+        phpExprs.add(new PhpExpr(sb.toString(), Integer.MAX_VALUE));
     }
 
     /**
