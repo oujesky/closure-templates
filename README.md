@@ -1,3 +1,57 @@
+# Soy to PHP compiler
+
+**Warning**: This is unofficial experimental fork of Google [Closure Templates](https://github.com/google/closure-templates), use at your own discretion.
+
+This fork is capable of compiling Soy templates to PHP. The compiler is mostly based on official work-in-progress compiler for Python. As such, the PHP compiler always uses strict autoescaping.
+
+## Soy to PHP compilation
+
+You can download latest [SoyToPhpCompiler.jar](https://github.com/oujesky/closure-templates/releases/download/php-jar/SoyToPhpSrcCompiler.jar) or build it yourself with standard `mvn package` command
+
+To run the compiler, use following command:
+```
+java -jar SoyToPhpSrcCompiler.jar --srcs file.soy --outputPathFormat {INPUT_FILE_NAME}.php
+```
+
+PHP specific optional parameters:
+* `--translationClass` (default `Goog\Soy\SimpleTranslator`) - Full name of PHP class responsible for translation of `{msg}` tags.
+
+## PHP usage
+
+To use your compiled PHP templates, you need to include classes in `php` subdirectory to your project together with the compiled PHP Soy templates. 
+
+The template itself is static method of a generated class. To get the result, you simply call it with optional parameter array. The result is instance of `Goog\Soy\SanitizedContent` subclass, which can be typecasted to `string` and echoed.
+
+Example:
+```
+{namespace my.soy.CompiledTemplate}
+
+{template .hello}
+    {@param name: string}
+    <p>Hello <string>{$name}</strong>!</p>
+{/template}
+```
+
+```php
+use My\Soy\CompiledTemplate;
+
+echo CompiledTemplate::hello([
+    'name' => 'World'
+]);
+```
+
+## Translations
+For `{msg}` tags, generated PHP code contains calls to static methods defined by `Goog\Soy\Translator` interface. The basic default implementation is handled by `Goog\Soy\SimpleTranslator` class which simply uses the default text as is defined in the Soy template. 
+
+You can supply your own implementation of the interface with `--translationClass` command line option.
+
+## TODO
+* Complete suite of unit tests for PHP compilation part
+* Full BiDi support
+* Composer repository for runtime PHP classes
+
+---
+
 # Closure Templates
 Closure Templates are a client- and server-side templating system that helps you
 dynamically build reusable HTML and UI elements. They have a simple syntax
