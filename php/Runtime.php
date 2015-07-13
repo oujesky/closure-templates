@@ -182,4 +182,108 @@ class Runtime
 	}
 
 
-} 
+
+	/**
+	 * A coercion function emulating JS style type conversion in the '+' operator.
+	 *
+	 * This function is similar to the JavaScript behavior when using the '+'
+	 * operator. Variables will will use the default behavior of the '+' operator
+	 * until they encounter a type error at which point the more 'simple' type will
+	 * be coerced to the more 'complex' type.
+	 *
+	 * Supported types are null (which is treated like a bool), bool, primitive
+	 * numbers (int, float, etc.), and strings. All other objects will be converted
+	 * to strings.
+	 *
+	 * Example:
+	 * Runtime::typeSafeAdd(true, true) = 2
+	 * Runtime::typeSafeAdd(true, 3) = 4
+	 * Runtime::typeSafeAdd(3, 'abc') = '3abc'
+	 * Runtime::typeSafeAdd(true, 3, 'abc') = '4abc'
+	 * Runtime::typeSafeAdd('abc', true, 3) = 'abctrue3'
+	 *
+	 * @param array $args List of parameters for addition/coercion.
+	 *
+	 * @return mixed The result of the addition. The return type will be based on the most
+	 * 		'complex' type passed in. Typically an integer or a string.
+	 */
+	public static function typeSafeAdd(...$args)
+	{
+		if (empty($args))
+		{
+			return null;
+		}
+
+		$length = count($args);
+
+		// JS operators can sometimes work as unary operators. So, we fall back to the
+		// initial value here in those cases to prevent ambiguous output.
+		if ($length === 1)
+		{
+			return $args[0];
+		}
+
+		$isString = is_string($args[0]);
+		$result = $args[0];
+		for ($i = 1; $i < $length; $i++)
+		{
+			$arg = $args[$i];
+			if ($isString)
+			{
+				$arg = self::convertToJsString($arg);
+				$result .= $arg;
+			}
+			// Special case for None which can be converted to bool but is not
+			// autocoerced. This can result in a conversion of result from a boolean to
+			// a number (which can affect later string conversion) and should be
+			// retained.
+			else if ($args === null)
+			{
+				$result += false;
+			}
+			else if (is_string($arg))
+			{
+				$result = self::convertToJsString($result) . self::convertToJsString($arg);
+				$isString = true;
+			}
+			else
+			{
+				$result += $arg;
+			}
+		}
+
+		return $result;
+	}
+
+
+
+	/**
+	 * Convert a value to a string, with the JS string values for primitives.
+	 *
+	 * @param mixed $value The value to stringify.
+	 *
+	 * @return string A string representation of value. For primitives, ensure that the result
+	 * 		matches the string value of their JS counterparts.
+	 */
+	private static function convertToJsString($value)
+	{
+		if ($value === null)
+		{
+			return 'null';
+		}
+		else if ($value === true)
+		{
+			return 'true';
+		}
+		else if ($value === false)
+		{
+			return 'false';
+		}
+		else
+		{
+			return strval($value);
+		}
+	}
+
+
+}

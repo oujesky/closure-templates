@@ -36,6 +36,7 @@ import com.google.template.soy.exprtree.OperatorNodes.OrOpNode;
 import com.google.template.soy.exprtree.OperatorNodes.NotOpNode;
 import com.google.template.soy.exprtree.OperatorNodes.ConditionalOpNode;
 import com.google.template.soy.exprtree.OperatorNodes.NullCoalescingOpNode;
+import com.google.template.soy.exprtree.OperatorNodes.PlusOpNode;
 import com.google.template.soy.internal.targetexpr.ExprUtils;
 import com.google.template.soy.phpsrc.restricted.*;
 import com.google.template.soy.shared.internal.NonpluginFunction;
@@ -279,6 +280,16 @@ final class TranslateToPhpExprVisitor extends AbstractReturningExprNodeVisitor<P
         PhpExpr falseExpr = children.get(1);
 
         return genTernaryConditional(conditionalExpr, trueExpr, falseExpr);
+    }
+
+
+    @Override protected PhpExpr visitPlusOpNode(PlusOpNode node) {
+        // PHP has stricter type casting between strings and other primitives than Soy, so addition
+        // must be sent through the typeSafeAdd utility to emulate that behavior.
+        List<PhpExpr> operandPhpExprs = visitChildren(node);
+
+        return new PhpExpr("Runtime::typeSafeAdd(" + operandPhpExprs.get(0).getText()
+                + ", " + operandPhpExprs.get(1).getText() + ")", Integer.MAX_VALUE);
     }
 
 
