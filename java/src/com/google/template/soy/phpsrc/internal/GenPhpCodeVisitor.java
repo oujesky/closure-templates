@@ -372,8 +372,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
                 phpCodeBuilder.appendLine("}");
 
             } else if (child instanceof IfElseNode) {
-                phpCodeBuilder.appendLine("}");
-                phpCodeBuilder.appendLine("else { ");
+                phpCodeBuilder.appendLine("else {");
                 phpCodeBuilder.increaseIndent();
                 visitChildren((IfElseNode) child);
                 phpCodeBuilder.decreaseIndent();
