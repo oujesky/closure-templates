@@ -219,12 +219,10 @@ final class GenPhpCallExprVisitor extends AbstractReturningSoyNodeVisitor<PhpExp
                     valuePhpExpr = PhpExprUtils.concatPhpExprs(
                             genPhpExprsVisitorFactory.create(localVarStack).exec(cpcn));
                 } else {
-                    // This is a param with content that cannot be represented as Python expressions, so we
+                    // This is a param with content that cannot be represented as PHP expressions, so we
                     // assume that code has been generated to define the temporary variable 'param<n>'.
                     String paramExpr = "$param" + cpcn.getId();
-                    // The param can be assumed to be a list at this point since it was created as an output
-                    // variable.
-                    valuePhpExpr = new PhpArrayExpr(paramExpr, Integer.MAX_VALUE);
+                    valuePhpExpr = new PhpExpr(paramExpr, Integer.MAX_VALUE);
                 }
 
                 // Param content nodes require a content kind in strict autoescaping, so the content must be
@@ -252,7 +250,7 @@ final class GenPhpCallExprVisitor extends AbstractReturningSoyNodeVisitor<PhpExp
      *
      * @param callExpr The expression text of the call itself.
      * @param directiveNames The list of the directive names to be applied to the call.
-     * @return A PyExpr containing the call expression with all directives applied.
+     * @return A PhpExpr containing the call expression with all directives applied.
      */
     private PhpExpr escapeCall(String callExpr, ImmutableList<String> directiveNames) {
         PhpExpr escapedExpr = new PhpExpr(callExpr, Integer.MAX_VALUE);
