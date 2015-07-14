@@ -100,9 +100,9 @@ public final class PhpExprUtils {
                 resultSb.append('.');
             }
 
-            resultSb.append('(');
+            phpExpr = maybeProtect(phpExpr, PhpExprUtils.phpPrecedenceForOperator(Operator.PLUS));
+
             resultSb.append(phpExpr.toPhpString().getText());
-            resultSb.append(')');
         }
 
         return new PhpStringExpr(resultSb.toString(), Integer.MAX_VALUE);
