@@ -100,7 +100,9 @@ public final class PhpExprUtils {
                 resultSb.append('.');
             }
 
+            resultSb.append('(');
             resultSb.append(phpExpr.toPhpString().getText());
+            resultSb.append(')');
         }
 
         return new PhpStringExpr(resultSb.toString(), Integer.MAX_VALUE);
