@@ -72,7 +72,6 @@ final class LocalVariableStack {
      * @return The translated expression, or null if not found.
      */
     @Nullable PhpExpr getVariableExpression(String variableName) {
-        variableName = "$" + variableName;
         for (Map<String, PhpExpr> frame : localVarExprs) {
             PhpExpr translation = frame.get(variableName);
             if (translation != null) {

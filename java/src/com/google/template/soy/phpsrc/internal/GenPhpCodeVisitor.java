@@ -17,9 +17,12 @@
 package com.google.template.soy.phpsrc.internal;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import com.google.template.soy.base.SoySyntaxException;
 import com.google.template.soy.base.internal.SoyFileKind;
+import com.google.template.soy.data.internalutils.NodeContentKinds;
 import com.google.template.soy.error.ErrorReporter;
 import com.google.template.soy.error.SoyError;
 import com.google.template.soy.exprtree.ExprNode;
@@ -35,9 +38,15 @@ import com.google.template.soy.sharedpasses.ShouldEnsureDataIsDefinedVisitor;
 import com.google.template.soy.soytree.*;
 import com.google.template.soy.soytree.ForNode.RangeArgs;
 import com.google.template.soy.soytree.SoyNode.ParentSoyNode;
+import com.google.template.soy.soytree.defn.TemplateParam;
+import com.google.template.soy.types.SoyType;
+import com.google.template.soy.types.aggregate.UnionType;
+import com.google.template.soy.types.primitive.SanitizedType;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
@@ -463,7 +472,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
     @Override protected void visitForNode(ForNode node) {
         TranslateToPhpExprVisitor translator = translateToPhpExprVisitorFactory.create(localVarExprs);
 
-        String varName = "$" + node.getVarName();
+        String varName = node.getVarName();
         String nodeId = Integer.toString(node.getId());
 
         RangeArgs range = node.getRangeArgs();
@@ -481,7 +490,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
         if (INTEGER.matcher(initPhpExprText).matches()) {
             initCode = initPhpExprText;
         } else {
-            initCode = varName + "Init" + nodeId;
+            initCode = "$" + varName + "Init" + nodeId;
             phpCodeBuilder.appendLine(initCode, " = ", initPhpExprText, ";");
         }
 
@@ -489,7 +498,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
         if (INTEGER.matcher(limitPhpExprText).matches()) {
             limitCode = limitPhpExprText;
         } else {
-            limitCode = varName + "Limit" + nodeId;
+            limitCode = "$" + varName + "Limit" + nodeId;
             phpCodeBuilder.appendLine(limitCode, " = ", limitPhpExprText, ";");
         }
 
@@ -497,23 +506,23 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
         if (INTEGER.matcher(incrementPhpExprText).matches()) {
             incrementCode = incrementPhpExprText;
         } else {
-            incrementCode = varName + "Increment" + nodeId;
+            incrementCode = "$" + varName + "Increment" + nodeId;
             phpCodeBuilder.appendLine(incrementCode, " = ", incrementPhpExprText, ";");
         }
 
         // The start of the JS 'for' loop.
         String incrementStmt = incrementCode.equals("1") ?
-                varName + nodeId + "++" : varName + nodeId + " += " + incrementCode;
+                "$" + varName + nodeId + "++" : "$" + varName + nodeId + " += " + incrementCode;
         phpCodeBuilder.appendLine(
                 "for (",
-                varName, nodeId, " = ", initCode, "; ",
-                varName, nodeId, " < ", limitCode, "; ",
+                "$", varName, nodeId, " = ", initCode, "; ",
+                "$", varName, nodeId, " < ", limitCode, "; ",
                 incrementStmt,
                 ") {");
 
         // Add a new localVarExprs frame and populate it with the translations from this node.
         localVarExprs.pushFrame();
-        localVarExprs.addVariable(varName, new PhpExpr(varName + nodeId, Integer.MAX_VALUE));
+        localVarExprs.addVariable(varName, new PhpExpr("$" + varName + nodeId, Integer.MAX_VALUE));
 
         // Generate the code for the loop body.
         phpCodeBuilder.increaseIndent();
@@ -609,13 +618,13 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
      */
     @Override protected void visitForeachNonemptyNode(ForeachNonemptyNode node) {
         // Build the local variable names.
-        String baseVarName = "$" + node.getVarName();
+        String baseVarName = node.getVarName();
         String foreachNodeId = Integer.toString(node.getForeachNodeId());
-        String listVarName = baseVarName + "List" + foreachNodeId;
-        String indexVarName = baseVarName + "Index" + foreachNodeId;
-        String dataVarName = baseVarName + "Data" + foreachNodeId;
-        String firstKeyVarName = baseVarName + "FirstKey" + foreachNodeId;
-        String lastKeyVarName = baseVarName + "LastKey" + foreachNodeId;
+        String listVarName = "$" + baseVarName + "List" + foreachNodeId;
+        String indexVarName = "$" + baseVarName + "Index" + foreachNodeId;
+        String dataVarName = "$" + baseVarName + "Data" + foreachNodeId;
+        String firstKeyVarName = "$" + baseVarName + "FirstKey" + foreachNodeId;
+        String lastKeyVarName = "$" + baseVarName + "LastKey" + foreachNodeId;
 
         localVarExprs.pushFrame();
 
@@ -840,6 +849,9 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
             phpCodeBuilder.appendLine("$opt_data = is_array($opt_data) ? $opt_data : [];");
         }
 
+        // Type check parameters.
+        genParamTypeChecks(node);
+
         phpCodeBuilder.pushOutputVar("$output");
 
         visitChildren(node);
@@ -877,5 +889,259 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
      */
     private String getPhpClassName(SoyFileNode node) {
         return namespaceAndNameFromModule(node.getNamespace()).second;
+    }
+
+
+    /**
+     * Generate code to verify the runtime types of the input params. Also typecasts the
+     * input parameters and assigns them to local variables for use in the template.
+     * @param node the template node.
+     */
+    private void genParamTypeChecks(TemplateNode node) {
+        for (TemplateParam param : node.getAllParams()) {
+            if (param.declLoc() != TemplateParam.DeclLoc.HEADER) {
+                continue;
+            }
+            String paramName = param.name();
+            SoyType paramType = param.type();
+            String paramVal = TranslateToPhpExprVisitor.genCodeForParamAccess(paramName);
+            String paramAlias = genParamAlias(paramName);
+            boolean isAliasedLocalVar = false;
+            switch (paramType.getKind()) {
+                case ANY:
+                case UNKNOWN:
+                    // Do nothing
+                    break;
+
+                case BOOL:
+                    genParamTypeChecksUsingException(
+                            paramName, paramAlias, "!!" + paramVal, param.isInjected(),
+                            "is_bool({0}) || {0} === 1 || {0} === 0", "false");
+                    phpCodeBuilder.appendLine(paramAlias + " = " + paramVal + ";");
+                    isAliasedLocalVar = true;
+                    break;
+
+                case STRING:
+                case INT:
+                case FLOAT:
+                case LIST:
+                case RECORD:
+                case MAP:
+                case ENUM:
+                case OBJECT:{
+                    String typePredicate;
+                    String defaultValue;
+                    switch (param.type().getKind()) {
+                        case STRING:
+                            typePredicate = "is_string({0}) || ({0} instanceof \\Goog\\Soy\\SanitizedContent)";
+                            defaultValue = "''";
+                            break;
+
+                        case INT:
+                        case ENUM:
+                            typePredicate = "is_int({0})";
+                            defaultValue = "0";
+                            break;
+
+                        case FLOAT:
+                            typePredicate = "is_float({0})";
+                            defaultValue = "0.0";
+                            break;
+
+                        case LIST:
+                        case RECORD:
+                        case MAP:
+                            typePredicate = "is_array({0})";
+                            defaultValue = "[]";
+                            break;
+
+                        case OBJECT:
+                            typePredicate = "is_object({0})";
+                            defaultValue = "null";
+                            break;
+
+                        default:
+                            throw new AssertionError();
+                    }
+
+                    genParamTypeChecksUsingException(
+                            paramName, paramAlias, paramVal, param.isRequired(), typePredicate, defaultValue
+                    );
+                    isAliasedLocalVar = true;
+                    break;
+                }
+
+                case UNION:
+                    UnionType unionType = (UnionType) param.type();
+                    Pair<String, String> unionTypeTests = genUnionTypeTests(unionType);
+                    genParamTypeChecksUsingException(
+                            paramName, paramAlias, paramVal, param.isRequired(),
+                            unionTypeTests.first, unionTypeTests.second);
+                    isAliasedLocalVar = true;
+                    break;
+
+                default:
+                    if (param.type() instanceof SanitizedType) {
+                        String typeName = NodeContentKinds.toPhpSanitizedContentOrdainer(
+                                ((SanitizedType) param.type()).getContentKind()
+                        );
+                        // We allow string or unsanitized type to be passed where a
+                        // sanitized type is specified - it just means that the text will
+                        // be escaped.
+                        genParamTypeChecksUsingException(
+                                paramName, paramAlias, paramVal, param.isRequired(),
+                                "({0} instanceof " + typeName +
+                                        ") || ({0} instanceof \\Goog\\Soy\\UnsanitizedText) || is_string({0})",
+                                "''"
+                            );
+                        isAliasedLocalVar = true;
+                        break;
+                    }
+
+                    throw new AssertionError("Unsupported type: " + param.type());
+            }
+
+            if (isAliasedLocalVar) {
+                localVarExprs.addVariable(paramName, new PhpExpr(paramAlias, Integer.MAX_VALUE));
+            }
+        }
+    }
+
+
+    /**
+     * Generate a name for the local variable which will store the value of a
+     * parameter, avoiding collision with JavaScript reserved words.
+     */
+    private String genParamAlias(String paramName) {
+
+        // PHP variable cannot be named $this (see http://php.net/manual/en/language.variables.basics.php)
+        if (paramName.equals("this"))
+        {
+            paramName = "this_";
+        }
+
+        return "$" + paramName;
+    }
+
+    /**
+     * Generate code to check the type of a parameter and throw Goog\Soy\Exception if not valid
+     * @param paramName The Soy name of the parameter.
+     * @param paramAlias The name of the local variable which stores the value of the param.
+     * @param paramVal The value expression of the parameter, which might be
+     *     an expression in some cases but will usually be opt_params.somename.
+     * @param isRequired True iff the parameter is required
+     * @param typePredicate PHP which tests whether the parameter is the correct type.
+     *     This is a format string - the {0} format field will be replaced with the
+     *     parameter value.
+     * @param paramDefault PHP expression for default value when the parameter is
+     *     not required and is not present.
+     */
+    private void genParamTypeChecksUsingException(
+            String paramName, String paramAlias, String paramVal, boolean isRequired,
+            String typePredicate, String paramDefault) {
+
+        String paramAccessVal = TranslateToPhpExprVisitor.genCodeForParamAccess(paramName);
+
+        // throw a PHP exception if the parameter value does not pass the type predicate
+        phpCodeBuilder.appendLine("if (!(",
+                MessageFormat.format(typePredicate, paramAccessVal), ")) { " +
+                "throw new \\Goog\\Soy\\Exception('Invalid type \"'.gettype(",
+                paramAccessVal, ").'\" for parameter \"", paramName, "\"'); }");
+
+        if (isRequired) {
+            // required parameters does not need default value
+            phpCodeBuilder.appendLine(paramAlias, " = ", paramVal, ";");
+        } else {
+            phpCodeBuilder.appendLine(paramAlias, " = ", "isset(", paramAccessVal, ") ? ",
+                    paramVal, " : ", paramDefault, ";");
+        }
+    }
+
+
+    /**
+     * Generate code to test an input param against each of the member types of a union.
+     */
+    private Pair<String,String> genUnionTypeTests(UnionType unionType) {
+        Set<String> typeTests = Sets.newTreeSet();
+        String defaultVal = "null";
+        for (SoyType memberType : unionType.getMembers()) {
+            switch (memberType.getKind()) {
+                case ANY:
+                case UNKNOWN:
+                    // Unions generally should not include 'any' as a member, but just in
+                    // case they do we should handle it. Since 'any' does not include null,
+                    // the test simply ensures that the value is not null.
+                    typeTests.add("{0} !== null");
+                    break;
+
+                case NULL:
+                    // Handled separately, see below.
+                    break;
+
+                case BOOL:
+                    typeTests.add("is_bool({0}) || {0} === 1 || {0} === 0");
+                    defaultVal = "false";
+                    break;
+
+                case STRING:
+                    typeTests.add("is_string({0})");
+                    typeTests.add("({0} instanceof \\Goog\\Soy\\SanitizedContent)");
+                    defaultVal = "''";
+                    break;
+
+                case INT:
+                case ENUM:
+                    typeTests.add("is_int({0})");
+                    defaultVal = "0";
+                    break;
+
+                case FLOAT:
+                    typeTests.add("is_float({0})");
+                    defaultVal = "0.0";
+                    break;
+
+                case LIST:
+                case RECORD:
+                case MAP:
+                    typeTests.add("is_array({0})");
+                    defaultVal = "[]";
+                    break;
+
+                case OBJECT:
+                    typeTests.add("is_object({0}");
+                    defaultVal = "null";
+                    break;
+
+                default:
+                    if (memberType instanceof SanitizedType) {
+                        // For sanitized kinds, an unwrapped string is also considered valid.
+                        // (It will be auto-escaped.)  But we don't want to test for this multiple
+                        // times if there are multiple sanitized kinds.
+                        String typeName = NodeContentKinds.toPhpSanitizedContentOrdainer(
+                                ((SanitizedType) memberType).getContentKind()
+                        );
+                        typeTests.add("({0} instanceof " + typeName + ")");
+                        typeTests.add("({0} instanceof \\Goog\\Soy\\UnsanitizedText)");
+                        typeTests.add("is_string({0})");
+                        defaultVal = "''";
+                        break;
+                    }
+                    throw new AssertionError("Unsupported union member type: " + memberType);
+            }
+        }
+
+        String result = Joiner.on(" || ").join(typeTests);
+        // Null test needs to come first which is why it's not included in the set.
+        int maxSize = 1;
+        if (unionType.isNullable()) {
+            result = "!isset({0}) || " + result;
+            maxSize++;
+        }
+
+        return Pair.of(
+                result,
+                // in case of nullable tyle, we can return correct default value
+                typeTests.size() > maxSize ? "null" : defaultVal
+        );
     }
 }

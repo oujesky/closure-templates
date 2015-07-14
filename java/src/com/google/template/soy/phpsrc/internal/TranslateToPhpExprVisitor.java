@@ -104,6 +104,16 @@ final class TranslateToPhpExprVisitor extends AbstractReturningExprNodeVisitor<P
     };
 
 
+    /**
+     * Method that returns code to access a named parameter.
+     * @param paramName the name of the parameter.
+     * @return The code to access the value of that parameter.
+     */
+    static String genCodeForParamAccess(String paramName) {
+        return genCodeForLiteralKeyAccess("$opt_data", paramName);
+    }
+
+
     // -----------------------------------------------------------------------------------------------
     // Implementation for a dummy root node.
 
@@ -381,8 +391,7 @@ final class TranslateToPhpExprVisitor extends AbstractReturningExprNodeVisitor<P
      * @param keyName the variable name to be used as a key
      */
     private static String genCodeForKeyAccess(String containerExpr, String keyName) {
-        String s = containerExpr + "[" + keyName + "]";
-        return "(isset(" + s + ") ? " + s + " : null)";
+        return containerExpr + "[" + keyName + "]";
     }
 
     /**
