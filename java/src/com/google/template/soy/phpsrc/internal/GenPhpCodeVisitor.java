@@ -715,7 +715,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
                             + "template, which is unsupported in the PHP compiler.", node);
         }
 
-        String generatedVarName = node.getUniqueVarName();
+        String generatedVarName = "$" + node.getUniqueVarName();
 
         // Traverse the children and push them onto the generated variable.
         localVarExprs.pushFrame();
@@ -729,7 +729,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
 
         // Mark the result as being escaped to the appropriate kind (e.g., "\Goog\Soy\SanitizedHtml").
         phpCodeBuilder.appendLine(generatedVarName, " = ",
-                PhpExprUtils.wrapAsSanitizedContent(node.getContentKind(), generatedContent).getText());
+                PhpExprUtils.wrapAsSanitizedContent(node.getContentKind(), generatedContent).getText(), ";");
 
         // Add a mapping for generating future references to this local var.
         localVarExprs.addVariable(node.getVarName(), new PhpExpr(generatedVarName, Integer.MAX_VALUE));
