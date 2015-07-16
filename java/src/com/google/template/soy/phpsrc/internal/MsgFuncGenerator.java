@@ -134,7 +134,7 @@ final class MsgFuncGenerator {
     }
 
     private PhpStringExpr phpFuncForRawTextMsg() {
-        String phpMsgText = processMsgPartsHelper(msgParts, escaperForPhpFormatString);
+        String phpMsgText = processMsgPartsHelper(msgParts, nullEscaper);
 
         prepareFunc.addArg(msgId)
                 .addArg(phpMsgText)
@@ -145,7 +145,7 @@ final class MsgFuncGenerator {
     }
 
     private PhpStringExpr phpFuncForGeneralMsg() {
-        String phpMsgText = processMsgPartsHelper(msgParts, escaperForPhpFormatString);
+        String phpMsgText = processMsgPartsHelper(msgParts, nullEscaper);
         Map<PhpExpr, PhpExpr> nodePhpVarToPhpExprMap = collectVarNameListAndToPhpExprMap();
 
         prepareFunc.addArg(msgId)
@@ -301,20 +301,6 @@ final class MsgFuncGenerator {
         }
         return rawMsgTextSb.toString();
     }
-
-    /**
-     * A mapper to apply escaping for PHP format string.
-     *
-     * <p>It escapes '{' and '}' to '{{' and '}}' in the String.
-     * @todo necessary?
-     */
-    private static Function<String, String> escaperForPhpFormatString =
-            new Function<String, String>() {
-                @Override
-                public String apply(String str) {
-                    return str.replaceAll("\\{", "{{").replaceAll("\\}", "}}");
-                }
-            };
 
     /**
      * A mapper which does nothing.
