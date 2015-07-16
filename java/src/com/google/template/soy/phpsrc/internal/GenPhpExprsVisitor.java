@@ -208,7 +208,7 @@ public class GenPhpExprsVisitor extends AbstractSoyNodeVisitor<List<PhpExpr>> {
             long firstId = MsgUtils.computeMsgIdForDualFormat(node.getMsg());
             long secondId = MsgUtils.computeMsgIdForDualFormat(node.getFallbackMsg());
             phpExprTextSb.append(PhpExprUtils.TRANSLATOR_NAME + "::isMsgAvailable(" + firstId + ")")
-                    .append(" || ")
+                    .append(" || !")
                     .append(PhpExprUtils.TRANSLATOR_NAME + "::isMsgAvailable(" + secondId + ")");
 
 
