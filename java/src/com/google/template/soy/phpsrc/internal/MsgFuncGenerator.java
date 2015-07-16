@@ -177,7 +177,7 @@ final class MsgFuncGenerator {
                 .addArg(getPhpMsgDesc())
                 .addArg(getPhpMsgMeaning());
 
-        // Translates {@link MsgPluralNode#pluralExpr} into a Python lookup expression.
+        // Translates {@link MsgPluralNode#pluralExpr} into a PHP lookup expression.
         // Note that pluralExpr represent the Soy expression inside the attributes of a plural tag.
         PhpExpr pluralPhpExpr = translateToPhpExprVisitor.exec(pluralNode.getExpr());
 

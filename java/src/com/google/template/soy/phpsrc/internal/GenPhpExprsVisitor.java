@@ -249,7 +249,7 @@ public class GenPhpExprsVisitor extends AbstractSoyNodeVisitor<List<PhpExpr>> {
      * conditional expression.
      */
     @Override protected void visitIfNode(IfNode node) {
-        // Create another instance of this visitor for generating Python expressions from children.
+        // Create another instance of this visitor for generating PHP expressions from children.
         GenPhpExprsVisitor genPhpExprsVisitor = genPhpExprsVisitorFactory.create(localVarExprs);
         TranslateToPhpExprVisitor translator = translateToPhpExprVisitorFactory.create(localVarExprs);
 

@@ -96,7 +96,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
     @VisibleForTesting protected LocalVariableStack localVarExprs;
 
     /**
-     * @param translationClass Python class path used in python runtime to execute translation.
+     * @param translationClass PHP class used in PHP runtime to execute translation.
      */
     @Inject
     GenPhpCodeVisitor(@PhpBidiIsRtlFn String bidiIsRtlFn,
@@ -147,8 +147,8 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
             if (isComputableAsPhpExprVisitor.exec(child)) {
                 childPhpExprs.addAll(genPhpExprsVisitor.exec(child));
             } else {
-                // We've reached a child that is not computable as a Python expression.
-                // First add the PhpExprss from preceding consecutive siblings that are computable as Python
+                // We've reached a child that is not computable as a PHP expression.
+                // First add the PhpExprss from preceding consecutive siblings that are computable as PHP
                 // expressions (if any).
                 if (!childPhpExprs.isEmpty()) {
                     phpCodeBuilder.addToOutputVar(childPhpExprs);
@@ -759,7 +759,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
     @Override protected void visitCallParamContentNode(CallParamContentNode node) {
         // This node should only be visited when it's not computable as PHP expressions.
         Preconditions.checkArgument(!isComputableAsPhpExprVisitor.exec(node),
-                "Should only define 'param<n>' when not computable as Python expressions.");
+                "Should only define 'param<n>' when not computable as PHP expressions.");
 
         phpCodeBuilder.pushOutputVar("$param" + node.getId());
         phpCodeBuilder.initOutputVarIfNecessary();

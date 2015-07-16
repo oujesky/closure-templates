@@ -49,7 +49,7 @@ import java.util.List;
  *   pcb.appendLine("# ", THE_END);
  * </pre>
  *
- * The above example builds the following Python code:
+ * The above example builds the following PHP code:
  * <pre>
  * function title($opt_data) {
  *   $output = '';
