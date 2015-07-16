@@ -272,6 +272,8 @@ public class GenPhpExprsVisitor extends AbstractSoyNodeVisitor<List<PhpExpr>> {
 
                 // Append the conditional and if/else syntax.
                 PhpExpr condPhpExpr = translator.exec(icn.getExprUnion().getExpr());
+                condPhpExpr = PhpExprUtils.maybeProtect(condPhpExpr,
+                        PhpExprUtils.phpPrecedenceForOperator(Operator.CONDITIONAL));
                 phpExprTextSb.append(condPhpExpr.getText()).append(" ? ");
                 phpExprTextSb.append(condBlock.getText()).append(" : ");
 
