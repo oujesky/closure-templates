@@ -202,19 +202,21 @@ class Runtime
 	 * Runtime::typeSafeAdd(true, 3, 'abc') = '4abc'
 	 * Runtime::typeSafeAdd('abc', true, 3) = 'abctrue3'
 	 *
-	 * @param array $args List of parameters for addition/coercion.
+	 * @param array ... List of parameters for addition/coercion.
 	 *
 	 * @return mixed The result of the addition. The return type will be based on the most
 	 * 		'complex' type passed in. Typically an integer or a string.
 	 */
-	public static function typeSafeAdd(...$args)
+	public static function typeSafeAdd()
 	{
-		if (empty($args))
+		$length = func_num_args();
+
+		if ($length === 0)
 		{
 			return null;
 		}
 
-		$length = count($args);
+		$args = func_get_args();
 
 		// JS operators can sometimes work as unary operators. So, we fall back to the
 		// initial value here in those cases to prevent ambiguous output.
@@ -233,7 +235,7 @@ class Runtime
 				$arg = self::convertToJsString($arg);
 				$result .= $arg;
 			}
-			// Special case for None which can be converted to bool but is not
+			// Special case for null which can be converted to bool but is not
 			// autocoerced. This can result in a conversion of result from a boolean to
 			// a number (which can affect later string conversion) and should be
 			// retained.
