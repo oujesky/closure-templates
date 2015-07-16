@@ -23,7 +23,6 @@ import com.google.common.collect.Iterables;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.template.soy.base.SoyBackendKind;
-import com.google.template.soy.base.SoySyntaxException;
 import com.google.template.soy.error.ErrorReporter;
 import com.google.template.soy.error.SoyError;
 import com.google.template.soy.exprtree.*;
@@ -43,11 +42,11 @@ import com.google.template.soy.shared.internal.NonpluginFunction;
 import com.google.template.soy.shared.internal.SharedModule;
 import com.google.template.soy.types.SoyObjectType;
 import com.google.template.soy.types.SoyType;
-import com.google.template.soy.types.SoyType.Kind;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Visitor for translating a Soy expression (in the form of an {@link ExprNode}) into an
@@ -182,27 +181,25 @@ final class TranslateToPhpExprVisitor extends AbstractReturningExprNodeVisitor<P
     }
 
     private PhpExpr visitNullSafeNode(ExprNode node) {
-        StringBuilder nullSafetyPrefix = new StringBuilder();
-        String refText = visitNullSafeNodeRecurse(node, nullSafetyPrefix);
+        AtomicBoolean nullSafe = new AtomicBoolean(true);
+        String refText = visitNullSafeNodeRecurse(node, nullSafe);
 
-        if (nullSafetyPrefix.length() == 0) {
+        if (nullSafe.get()) {
             return new PhpExpr(refText, Integer.MAX_VALUE);
         } else {
-            return new PhpExpr(
-                    nullSafetyPrefix + refText,
+            // Make sure that PHP does not throw undefined index notices
+            return new PhpExpr("isset(" + refText + ") ? " + refText + " : null",
                     PhpExprUtils.phpPrecedenceForOperator(Operator.CONDITIONAL));
         }
     }
 
-    private String visitNullSafeNodeRecurse(ExprNode node, StringBuilder nullSafetyPrefix) {
+    private String visitNullSafeNodeRecurse(ExprNode node, AtomicBoolean nullSafe) {
         switch (node.getKind()) {
             case VAR_REF_NODE: {
                 VarRefNode varRef = (VarRefNode) node;
                 if (varRef.isInjected()) {
                     // Case 1: Injected data reference.
-                    if (varRef.isNullSafeInjected()) {
-                        nullSafetyPrefix.append("$opt_ijData === null ? null : ");
-                    }
+                    nullSafe.set(false);
                     return genCodeForLiteralKeyAccess("$opt_ijData", varRef.getName());
                 } else {
                     PhpExpr translation = localVarExprs.getVariableExpression(varRef.getName());
@@ -211,6 +208,7 @@ final class TranslateToPhpExprVisitor extends AbstractReturningExprNodeVisitor<P
                         return translation.getText();
                     } else {
                         // Case 3: Data reference.
+                        nullSafe.set(false);
                         return genCodeForLiteralKeyAccess("$opt_data", varRef.getName());
                     }
                 }
@@ -220,12 +218,8 @@ final class TranslateToPhpExprVisitor extends AbstractReturningExprNodeVisitor<P
             case ITEM_ACCESS_NODE: {
                 DataAccessNode dataAccess = (DataAccessNode) node;
                 // First recursively visit base expression.
-                String refText = visitNullSafeNodeRecurse(dataAccess.getBaseExprChild(), nullSafetyPrefix);
-
-                // Generate null safety check for base expression.
-                if (dataAccess.isNullSafe()) {
-                    nullSafetyPrefix.append(refText + " === null ? null : ");
-                }
+                String refText = visitNullSafeNodeRecurse(dataAccess.getBaseExprChild(), nullSafe);
+                nullSafe.set(false);
 
                 // Generate access to field
                 if (node.getKind() == ExprNode.Kind.FIELD_ACCESS_NODE) {
@@ -234,16 +228,8 @@ final class TranslateToPhpExprVisitor extends AbstractReturningExprNodeVisitor<P
                             fieldAccess.getBaseExprChild().getType(), refText, fieldAccess.getFieldName());
                 } else {
                     ItemAccessNode itemAccess = (ItemAccessNode) node;
-                    Kind baseKind = itemAccess.getBaseExprChild().getType().getKind();
                     PhpExpr keyPhpExpr = visit(itemAccess.getKeyExprChild());
                     return genCodeForKeyAccess(refText, keyPhpExpr.getText());
-//                    if (baseKind == Kind.MAP || baseKind == Kind.RECORD) {
-//                        return genCodeForKeyAccess(refText, keyPhpExpr.getText());
-//                    } else {
-//                        return new PhpFunctionExprBuilder("Runtime::keySafeDataAccess")
-//                                .addArg(new PhpExpr(refText, Integer.MAX_VALUE))
-//                                .addArg(keyPhpExpr).build();
-//                    }
                 }
             }
 
