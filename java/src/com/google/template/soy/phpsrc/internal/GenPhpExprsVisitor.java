@@ -240,7 +240,7 @@ public class GenPhpExprsVisitor extends AbstractSoyNodeVisitor<List<PhpExpr>> {
             sb.append(basePhpExpr.getText()).append(", ");
         }
 
-        sb.append("'").append(node.getSelectorText()).append("');");
+        sb.append("'").append(node.getSelectorText()).append("')");
         phpExprs.add(new PhpExpr(sb.toString(), Integer.MAX_VALUE));
     }
 
