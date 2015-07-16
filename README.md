@@ -6,7 +6,7 @@ This fork is capable of compiling Soy templates to PHP. The compiler is mostly b
 
 ## Soy to PHP compilation
 
-You can download latest [SoyToPhpCompiler.jar](https://github.com/oujesky/closure-templates/releases/download/php-jar/SoyToPhpSrcCompiler.jar) or build it yourself with standard `mvn package` command
+You can download latest [SoyToPhpCompiler.jar](https://github.com/oujesky/closure-templates/releases) or build it yourself with standard `mvn package` command
 
 To run the compiler, use following command:
 ```
@@ -18,7 +18,7 @@ PHP specific optional parameters:
 
 ## PHP usage
 
-To use your compiled PHP templates, you need to include classes in `php` subdirectory to your project together with the compiled PHP Soy templates. 
+To use your compiled PHP templates, you need to include classes in `php` subdirectory to your project together with the compiled PHP Soy templates. Alternatively, you can dowload zip package with the runtime classes [soy-php-runtime.zip](https://github.com/oujesky/closure-templates/releases)
 
 The template itself is static method of a generated class. To get the result, you simply call it with optional parameter array. The result is instance of `Goog\Soy\SanitizedContent` subclass, which can be typecasted to `string` and echoed.
 
@@ -46,9 +46,9 @@ For `{msg}` tags, generated PHP code contains calls to static methods defined by
 You can supply your own implementation of the interface with `--translationClass` command line option.
 
 ## TODO
-* Complete suite of unit tests for PHP compilation part
 * Full BiDi support
 * Composer repository for runtime PHP classes
+* Injected data
 
 ---
 
