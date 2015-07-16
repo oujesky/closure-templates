@@ -458,13 +458,11 @@ final class TranslateToPhpExprVisitor extends AbstractReturningExprNodeVisitor<P
     private PhpExpr genTernaryConditional(PhpExpr conditionalExpr, PhpExpr trueExpr, PhpExpr falseExpr) {
         int conditionalPrecedence = PhpExprUtils.phpPrecedenceForOperator(Operator.CONDITIONAL);
         StringBuilder exprSb = new StringBuilder()
-                .append("(")
                 .append(PhpExprUtils.maybeProtect(conditionalExpr, conditionalPrecedence).getText())
                 .append(" ? ")
                 .append(PhpExprUtils.maybeProtect(trueExpr, conditionalPrecedence).getText())
                 .append(" : ")
-                .append(PhpExprUtils.maybeProtect(falseExpr, conditionalPrecedence).getText())
-                .append(")");
+                .append(PhpExprUtils.maybeProtect(falseExpr, conditionalPrecedence).getText());
 
         return new PhpExpr(exprSb.toString(), conditionalPrecedence);
     }

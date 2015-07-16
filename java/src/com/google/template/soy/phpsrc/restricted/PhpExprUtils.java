@@ -118,7 +118,7 @@ public final class PhpExprUtils {
         List<PhpExpr> exprs = ImmutableList.of(phpExpr, new PhpExpr("null", Integer.MAX_VALUE));
 
         String conditionalExpr = ExprUtils.genExprWithNewToken(Operator.NOT_EQUAL, exprs, "!==");
-        return new PhpExpr(conditionalExpr, PhpExprUtils.phpPrecedenceForOperator(Operator.NOT_EQUAL));
+        return new PhpExpr(conditionalExpr, PhpExprUtils.phpPrecedenceForOperator(Operator.CONDITIONAL));
     }
 
     /**
