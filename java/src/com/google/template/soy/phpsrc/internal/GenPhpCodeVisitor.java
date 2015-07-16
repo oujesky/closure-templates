@@ -565,7 +565,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
         // Define list variable
         TranslateToPhpExprVisitor translator = translateToPhpExprVisitorFactory.create(localVarExprs);
         PhpExpr dataRefPhpExpr = translator.exec(node.getExpr());
-        phpCodeBuilder.appendLine(listVarName, " = ", dataRefPhpExpr.getText(), ";");
+        phpCodeBuilder.appendLine(listVarName, " = (array)(", dataRefPhpExpr.getText(), ");");
 
         // If has 'ifempty' node, add the wrapper 'if' statement.
         boolean hasIfemptyNode = node.numChildren() == 2;
