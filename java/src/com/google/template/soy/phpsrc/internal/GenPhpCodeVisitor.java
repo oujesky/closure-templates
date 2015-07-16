@@ -914,7 +914,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
 
                 case BOOL:
                     genParamTypeChecksUsingException(
-                            paramName, paramAlias, "!!" + paramVal, param.isInjected(),
+                            paramName, paramAlias, "!!" + paramVal, param.isRequired(),
                             "is_bool({0}) || {0} === 1 || {0} === 0", "false");
                     phpCodeBuilder.appendLine(paramAlias + " = " + paramVal + ";");
                     isAliasedLocalVar = true;
@@ -1040,6 +1040,12 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
             String typePredicate, String paramDefault) {
 
         String paramAccessVal = TranslateToPhpExprVisitor.genCodeForParamAccess(paramName);
+
+        // throw a PHP exception if the parameter is required and is missing
+        if (isRequired) {
+            phpCodeBuilder.appendLine("if (!isset(", paramAccessVal, ")) { " +
+                    "throw new \\Goog\\Soy\\Exception('Required parameter \"", paramName, "\" missing'); }");
+        }
 
         // throw a PHP exception if the parameter value does not pass the type predicate
         phpCodeBuilder.appendLine("if (!(",
