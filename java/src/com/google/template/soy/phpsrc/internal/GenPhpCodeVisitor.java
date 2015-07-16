@@ -76,6 +76,9 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
     /** The contents of the generated PHP files. */
     private List<String> phpFilesContents;
 
+    /** Generated calls for registering delegate templates */
+    private List<String> delegateRegisterCalls;
+
     @VisibleForTesting protected PhpCodeBuilder phpCodeBuilder;
 
     private final IsComputableAsPhpExprVisitor isComputableAsPhpExprVisitor;
@@ -87,8 +90,6 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
     private final TranslateToPhpExprVisitorFactory translateToPhpExprVisitorFactory;
 
     private final GenPhpCallExprVisitor genPhpCallExprVisitor;
-
-    private List<String> delegateRegisterCalls;
 
     /**
      * @see LocalVariableStack
@@ -121,7 +122,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
         phpCodeBuilder = null;
         genPhpExprsVisitor = null;
         localVarExprs = null;
-        delegateRegisterCalls = new ArrayList<>();
+        delegateRegisterCalls = null;
         visit(node);
         return phpFilesContents;
     }
@@ -232,6 +233,8 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
 
         phpCodeBuilder.increaseIndent();
 
+        delegateRegisterCalls = new ArrayList<>();
+
         // Add code for each template.
         for (TemplateNode template : node.getChildren()) {
             phpCodeBuilder.appendLine().appendLine();
@@ -251,6 +254,7 @@ final class GenPhpCodeVisitor extends AbstractSoyNodeVisitor<List<String>> {
         for (String delegateRegisterCall : delegateRegisterCalls) {
             phpCodeBuilder.appendLineEnd(delegateRegisterCall);
         }
+        delegateRegisterCalls = null;
 
         phpFilesContents.add(phpCodeBuilder.getCode());
         phpCodeBuilder = null;
