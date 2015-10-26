@@ -39,7 +39,7 @@ abstract class SanitizedContent
 	 */
 	function __toString()
 	{
-		return $this->content;
+		return (string)$this->content;
 	}
 
 
