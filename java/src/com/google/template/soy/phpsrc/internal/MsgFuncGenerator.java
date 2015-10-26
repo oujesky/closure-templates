@@ -134,7 +134,7 @@ final class MsgFuncGenerator {
     }
 
     private PhpStringExpr phpFuncForRawTextMsg() {
-        String phpMsgText = processMsgPartsHelper(msgParts, nullEscaper);
+        String phpMsgText = processMsgPartsHelper(msgParts, escaperForPhpString);
 
         prepareFunc.addArg(msgId)
                 .addArg(phpMsgText)
@@ -145,7 +145,7 @@ final class MsgFuncGenerator {
     }
 
     private PhpStringExpr phpFuncForGeneralMsg() {
-        String phpMsgText = processMsgPartsHelper(msgParts, nullEscaper);
+        String phpMsgText = processMsgPartsHelper(msgParts, escaperForPhpString);
         Map<PhpExpr, PhpExpr> nodePhpVarToPhpExprMap = collectVarNameListAndToPhpExprMap();
 
         prepareFunc.addArg(msgId)
@@ -168,7 +168,7 @@ final class MsgFuncGenerator {
         for (Case<SoyMsgPluralCaseSpec> pluralCase : pluralPart.getCases()) {
             caseSpecStrToMsgTexts.put(
                     new PhpStringExpr("'" + pluralCase.spec() + "'"),
-                    new PhpStringExpr("'" + processMsgPartsHelper(pluralCase.parts(), nullEscaper) + "'"));
+                    new PhpStringExpr("'" + processMsgPartsHelper(pluralCase.parts(), escaperForPhpString) + "'"));
         }
 
         prepareFunc.addArg(msgId)
@@ -192,7 +192,7 @@ final class MsgFuncGenerator {
 
         ImmutableList<SoyMsgPart> msgPartsInIcuSyntax =
                 IcuSyntaxUtils.convertMsgPartsToEmbeddedIcuSyntax(msgParts, true);
-        String phpMsgText = processMsgPartsHelper(msgPartsInIcuSyntax, nullEscaper);
+        String phpMsgText = processMsgPartsHelper(msgPartsInIcuSyntax, escaperForPhpString);
 
         prepareFunc.addArg(msgId)
                 .addArg(phpMsgText)
@@ -303,12 +303,16 @@ final class MsgFuncGenerator {
     }
 
     /**
-     * A mapper which does nothing.
+     * A mapper to apply escaping for PHP string.
+     *
+     * <p>It escapes ' to \'
      */
-    private static Function<String, String> nullEscaper = new Function<String, String>() {
-        @Override
-        public String apply(String str) {
-            return str;
-        }
-    };
+    private static Function<String, String> escaperForPhpString =
+            new Function<String, String>() {
+                @Override
+                public String apply(String str) {
+                    return str.replaceAll("'", "\\\\'");
+                }
+            };
+
 }

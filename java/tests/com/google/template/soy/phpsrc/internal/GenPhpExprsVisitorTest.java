@@ -450,4 +450,20 @@ public final class GenPhpExprsVisitorTest extends TestCase {
 
         assertThatSoyExpr(soyCode).compilesTo(new PhpExpr(expectedPhpCode, Integer.MAX_VALUE));
     }
+
+
+    public void testMsgWithApostrophe() {
+        String soyCode =
+                "{msg meaning=\"'verb'\" desc=\"The word 'Archive' used as a verb.\"}"
+                        + "'Archive'"
+                        + "{/msg}\n";
+
+        String expectedPhpCode =
+                "Translator::renderLiteral("
+                        + "Translator::prepareLiteral("
+                        + "###, "
+                        + "'\\'Archive\\'', 'The word \\'Archive\\' used as a verb.', '\\'verb\\''))";
+
+        assertThatSoyExpr(soyCode).compilesTo(new PhpExpr(expectedPhpCode, Integer.MAX_VALUE));
+    }
 }
