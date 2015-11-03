@@ -242,4 +242,41 @@ public final class PhpExprUtils {
 
         return phpMethodName;
     }
+
+    /**
+     * Escapes raw literal string to PHP string
+     *
+     * Based on BaseUtil.escapeSoyString(), but adjusted to work with PHP apostrophe enclosed strings
+     *
+     * Line breaks are transformed as PHP_EOL constants, backslashes and apostrohpes are escaped,
+     * other characters are left in their literal form
+     *
+     * @param value
+     * @return Prepared PHP string
+     */
+    public static String escapeLiteralString(String value) {
+
+        int len = value.length();
+        StringBuilder out = new StringBuilder(len * 9 / 8);
+        out.append('\'');
+
+        int codePoint;
+        for (int i = 0; i < len; i += Character.charCount(codePoint)) {
+            codePoint = value.codePointAt(i);
+
+            switch (codePoint) {
+                case '\n': out.append("'.PHP_EOL.'"); break;
+                // remove \r completely, line breaks are handled on \n
+                case '\r': out.append(""); break;
+                case '\\': out.append("\\\\"); break;
+                case '\'': out.append("\\'"); break;
+                default:
+                    out.appendCodePoint(codePoint);
+                    break;
+            }
+        }
+
+        out.append('\'');
+        return out.toString();
+    }
 }

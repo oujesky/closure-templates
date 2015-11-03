@@ -134,7 +134,7 @@ public class GenPhpExprsVisitor extends AbstractSoyNodeVisitor<List<PhpExpr>> {
      */
     @Override protected void visitRawTextNode(RawTextNode node) {
         // Escape special characters in the text before writing as a string.
-        String exprText = BaseUtils.escapeToSoyString(node.getRawText(), false);
+        String exprText = PhpExprUtils.escapeLiteralString(node.getRawText());
         phpExprs.add(new PhpStringExpr(exprText));
     }
 

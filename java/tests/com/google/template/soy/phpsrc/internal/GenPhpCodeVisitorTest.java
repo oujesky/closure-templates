@@ -343,4 +343,18 @@ public final class GenPhpCodeVisitorTest extends TestCase {
 
         assertThatSoyCode(soyCode).compilesTo(expectedPhpCode);
     }
+
+    public void testLiteral() {
+        String soyCode = "{literal}\n" +
+                "    /* some\n" +
+                "       multiline\n" +
+                "       string */\n" +
+                "    {$a}\n" +
+                "\t'\"test&\n" +
+                "{/literal}";
+
+        String expectedPhpCode = "$output .= ''.PHP_EOL.'    /* some'.PHP_EOL.'       multiline'.PHP_EOL.'       string */'.PHP_EOL.'    {$a}'.PHP_EOL.'\t\\'\"test&'.PHP_EOL.'';\n";
+
+        assertThatSoyCode(soyCode).compilesTo(expectedPhpCode);
+    }
 }
