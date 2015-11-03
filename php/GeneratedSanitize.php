@@ -3,7 +3,7 @@
 
 namespace Goog\Soy;
 
-class GeneratedSanitize 
+class GeneratedSanitize
 {
 
 private static $_ESCAPE_MAP_FOR_ESCAPE_HTML__AND__NORMALIZE_HTML__AND__ESCAPE_HTML_NOSPACE__AND__NORMALIZE_HTML_NOSPACE = [
@@ -233,44 +233,49 @@ const _FILTER_FOR_FILTER_HTML_ATTRIBUTES = '~^(?!style|on|action|archive|backgro
 const _FILTER_FOR_FILTER_HTML_ELEMENT_NAME = '~^(?!script|style|title|textarea|xmp|no)[a-z0-9_$:-]*\Z~ui';
 
 public static function escapeHtmlHelper($value) {
-  $value = (string)$value;
-  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_HTML, 
+  if(is_array($value) || is_object($value)) {
+    $value = json_encode($value);
+  } else {
+    $value = (string)$value;
+  }
+
+  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_HTML,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_HTML__AND__NORMALIZE_HTML__AND__ESCAPE_HTML_NOSPACE__AND__NORMALIZE_HTML_NOSPACE', $value);
 }
 
 public static function normalizeHtmlHelper($value) {
   $value = (string)$value;
-  return preg_replace_callback(self::_MATCHER_FOR_NORMALIZE_HTML, 
+  return preg_replace_callback(self::_MATCHER_FOR_NORMALIZE_HTML,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_HTML__AND__NORMALIZE_HTML__AND__ESCAPE_HTML_NOSPACE__AND__NORMALIZE_HTML_NOSPACE', $value);
 }
 
 public static function escapeHtmlNospaceHelper($value) {
   $value = (string)$value;
-  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_HTML_NOSPACE, 
+  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_HTML_NOSPACE,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_HTML__AND__NORMALIZE_HTML__AND__ESCAPE_HTML_NOSPACE__AND__NORMALIZE_HTML_NOSPACE', $value);
 }
 
 public static function normalizeHtmlNospaceHelper($value) {
   $value = (string)$value;
-  return preg_replace_callback(self::_MATCHER_FOR_NORMALIZE_HTML_NOSPACE, 
+  return preg_replace_callback(self::_MATCHER_FOR_NORMALIZE_HTML_NOSPACE,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_HTML__AND__NORMALIZE_HTML__AND__ESCAPE_HTML_NOSPACE__AND__NORMALIZE_HTML_NOSPACE', $value);
 }
 
 public static function escapeJsStringHelper($value) {
   $value = (string)$value;
-  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_JS_STRING, 
+  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_JS_STRING,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_JS_STRING__AND__ESCAPE_JS_REGEX', $value);
 }
 
 public static function escapeJsRegexHelper($value) {
   $value = (string)$value;
-  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_JS_REGEX, 
+  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_JS_REGEX,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_JS_STRING__AND__ESCAPE_JS_REGEX', $value);
 }
 
 public static function escapeCssStringHelper($value) {
   $value = (string)$value;
-  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_CSS_STRING, 
+  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_CSS_STRING,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_CSS_STRING', $value);
 }
 
@@ -284,13 +289,13 @@ public static function filterCssValueHelper($value) {
 
 public static function escapeUriHelper($value) {
   $value = (string)$value;
-  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_URI, 
+  return preg_replace_callback(self::_MATCHER_FOR_ESCAPE_URI,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_URI__AND__NORMALIZE_URI__AND__FILTER_NORMALIZE_URI', $value);
 }
 
 public static function normalizeUriHelper($value) {
   $value = (string)$value;
-  return preg_replace_callback(self::_MATCHER_FOR_NORMALIZE_URI__AND__FILTER_NORMALIZE_URI, 
+  return preg_replace_callback(self::_MATCHER_FOR_NORMALIZE_URI__AND__FILTER_NORMALIZE_URI,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_URI__AND__NORMALIZE_URI__AND__FILTER_NORMALIZE_URI', $value);
 }
 
@@ -299,7 +304,7 @@ public static function filterNormalizeUriHelper($value) {
   if (!preg_match(self::_FILTER_FOR_FILTER_NORMALIZE_URI, $value)) {
     return '#zSoyz';
   }
-  return preg_replace_callback(self::_MATCHER_FOR_NORMALIZE_URI__AND__FILTER_NORMALIZE_URI, 
+  return preg_replace_callback(self::_MATCHER_FOR_NORMALIZE_URI__AND__FILTER_NORMALIZE_URI,
       'Goog\Soy\GeneratedSanitize::_REPLACER_FOR_ESCAPE_URI__AND__NORMALIZE_URI__AND__FILTER_NORMALIZE_URI', $value);
 }
 

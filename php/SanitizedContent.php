@@ -39,7 +39,11 @@ abstract class SanitizedContent
 	 */
 	function __toString()
 	{
-		return (string)$this->content;
+        if(is_array($this->content) || is_object($this->content)) {
+            return json_encode($this->content);
+        }
+
+        return (string)$this->content;
 	}
 
 
